@@ -145,14 +145,36 @@ ${birthInfo}
 
     const analysis = JSON.parse(content);
 
+    // Ensure all required fields exist with fallback values
+    const astrology = analysis.astrology || {
+      zodiacSign,
+      moonSign: "月亮星座待測",
+      risingSign: "上升星座待測",
+      interpretation: "星盤解讀需更多信息"
+    };
+    
+    const humanDesign = analysis.humanDesign || {
+      type: "生產者",
+      strategy: "根據情緒中心回應",
+      authority: "內在權威",
+      description: "人類圖解讀需更多信息"
+    };
+
+    const dailyFortune = analysis.dailyFortune || {
+      luckyColors: ["藍色", "白色"],
+      luckyNumbers: [3, 14, 21, 34, 45, 47],
+      overallFortune: "今日運勢待測",
+      advice: "保持平和心態"
+    };
+
     const lifeCoach: LifeCoach = {
       todayActions: [
-        `根據${analysis.astrology.zodiacSign}的特性，今天適合${analysis.dailyFortune.advice.split("。")[0]}`,
-        `發揮${analysis.humanDesign.strategy}的人生策略`,
-        `穿著${analysis.dailyFortune.luckyColors[0]}會增強今日能量`
+        `根據${astrology.zodiacSign}的特性，發揮你的優勢`,
+        `今日建議：${humanDesign.strategy}`,
+        `穿著${dailyFortune.luckyColors[0]}會增強能量`
       ],
-      dailyReminder: `${input.name}，記住：你的${analysis.personality.strengths[0]}是今天的超能力。`,
-      nextSteps: analysis.career.advice,
+      dailyReminder: `${input.name}，記住：你的${(analysis.personality?.strengths?.[0] || "內在智慧")}是今天的超能力。`,
+      nextSteps: analysis.career?.advice || "持續探索適合的職業方向",
     };
 
     const guardianRoles = ["光之騎士", "智慧引導者", "夢想創造者", "和諧使者", "勇敢先鋒"];
@@ -167,13 +189,31 @@ ${birthInfo}
     const result: FortuneResult = {
       id: crypto.randomUUID(),
       input,
-      personality: analysis.personality as PersonalityAnalysis,
-      career: analysis.career as CareerAnalysis,
-      dailyFortune: analysis.dailyFortune as DailyFortune,
-      ziWei: analysis.ziWei as ZiWeiAnalysis,
-      humanDesign: analysis.humanDesign as HumanDesignAnalysis,
-      astrology: analysis.astrology as AstrologyAnalysis,
-      iChing: analysis.iChing as IChing,
+      personality: analysis.personality || {
+        traits: ["待測"],
+        strengths: ["內在潛能"],
+        weaknesses: ["待測"],
+        description: "性格分析需更多信息"
+      },
+      career: analysis.career || {
+        suitableFields: ["需進一步探索"],
+        avoidFields: ["需進一步評估"],
+        advice: "建議尋求職業導向"
+      },
+      dailyFortune,
+      ziWei: analysis.ziWei || {
+        mainStar: "待測",
+        palace: "命宮",
+        interpretation: "紫微斗數解讀需計算"
+      },
+      humanDesign,
+      astrology,
+      iChing: analysis.iChing || {
+        hexagram: "☰",
+        hexagramName: "乾卦",
+        interpretation: "易經解讀需卦象計算",
+        advice: "順勢而為"
+      },
       lifeCoach,
       guardianRole,
       generatedAt: new Date().toISOString(),
