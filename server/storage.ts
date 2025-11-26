@@ -1,37 +1,24 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import type { FortuneResult } from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
-
+// In-memory storage for fortune results (optional caching)
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  saveResult(result: FortuneResult): Promise<void>;
+  getResult(id: string): Promise<FortuneResult | undefined>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private results: Map<string, FortuneResult>;
 
   constructor() {
-    this.users = new Map();
+    this.results = new Map();
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async saveResult(result: FortuneResult): Promise<void> {
+    this.results.set(result.id, result);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getResult(id: string): Promise<FortuneResult | undefined> {
+    return this.results.get(id);
   }
 }
 
