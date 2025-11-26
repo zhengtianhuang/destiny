@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -38,8 +39,11 @@ import {
   X,
   Sparkles,
   Loader2,
+  Zap,
+  AlertCircle,
 } from "lucide-react";
 import type { FortuneInput, FortuneResult } from "@shared/schema";
+import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount } from "@shared/monetization";
 
 const formSchema = z.object({
   name: z.string().min(1, "請輸入姓名"),
@@ -151,6 +155,16 @@ export default function Analyze() {
   };
 
   const onSubmitFinal = () => {
+    // 檢查廣告限制
+    if (!canAnalyze()) {
+      toast({
+        title: "今日分析次數已用盡",
+        description: "觀看廣告可獲得更多次數，或明天再試",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = form.getValues();
     
     const input: FortuneInput = {
@@ -166,6 +180,7 @@ export default function Analyze() {
       photoBase64: photoBase64 || undefined,
     };
 
+    incrementAnalysisCount();
     analyzeMutation.mutate(input);
   };
 
@@ -576,6 +591,37 @@ export default function Analyze() {
                         </FormDescription>
                       </div>
 
+                      {!canAnalyze() && (
+                        <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-900/20">
+                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <AlertDescription className="text-amber-800 dark:text-amber-300">
+                            今日分析次數已用盡（限 3 次/天）。觀看廣告可獲得額外次數！
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className="flex flex-col gap-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-3">
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">剩餘分析次數</span>
+                        </div>
+                        <div className="flex gap-1">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-2 flex-1 rounded-full transition-colors ${
+                                i < getRemainingAnalysis()
+                                  ? "bg-primary"
+                                  : "bg-muted"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {getRemainingAnalysis()} / 3
+                        </span>
+                      </div>
+
                       <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                         <Button
                           type="button"
@@ -591,13 +637,18 @@ export default function Analyze() {
                           type="button"
                           className="h-12 flex-1 gap-2 rounded-full"
                           onClick={onSubmitFinal}
-                          disabled={analyzeMutation.isPending}
+                          disabled={analyzeMutation.isPending || !canAnalyze()}
                           data-testid="button-submit-analysis"
                         >
                           {analyzeMutation.isPending ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin" />
                               分析中...
+                            </>
+                          ) : !canAnalyze() ? (
+                            <>
+                              <AlertCircle className="h-4 w-4" />
+                              次數已用盡
                             </>
                           ) : (
                             <>

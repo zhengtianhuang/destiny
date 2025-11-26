@@ -15,17 +15,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get main fortune analysis
       const result = await analyzeFortuneWithAI(input);
       
-      // If photo is provided, add face reading analysis
-      if (input.photoBase64) {
-        try {
-          const faceReading = await analyzeFaceWithAI(input.photoBase64);
-          result.faceReading = faceReading;
-        } catch (error) {
-          console.error("Face reading error:", error);
-          // Continue without face reading if it fails
-        }
-      }
-      
       res.json({ success: true, result });
     } catch (error) {
       console.error("Analysis error:", error);
