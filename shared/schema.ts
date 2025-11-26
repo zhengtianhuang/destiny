@@ -74,17 +74,48 @@ export interface IChing {
   advice: string;
 }
 
+export interface LifeCoach {
+  todayActions: string[];
+  dailyReminder: string;
+  decision?: string;
+  nextSteps: string;
+}
+
+export interface GuardianRole {
+  role: string;
+  element: string;
+  specialPower: string;
+  message: string;
+}
+
+export interface PsychologicalProfile {
+  personalityType: string;
+  attachmentStyle: string;
+  decisionStyle: string;
+  emotionalProcessing: string;
+}
+
+export interface BehaviorRecord {
+  date: string;
+  mood: number;
+  goalsCompleted: boolean;
+  socialLevel: number;
+  anxietyLevel: number;
+  notes?: string;
+}
+
 export interface FortuneResult {
   id: string;
   input: FortuneInput;
   personality: PersonalityAnalysis;
   career: CareerAnalysis;
   dailyFortune: DailyFortune;
-  faceReading?: FaceReadingAnalysis;
   ziWei: ZiWeiAnalysis;
   humanDesign: HumanDesignAnalysis;
   astrology: AstrologyAnalysis;
   iChing: IChing;
+  lifeCoach: LifeCoach;
+  guardianRole: GuardianRole;
   generatedAt: string;
 }
 
