@@ -1,10 +1,14 @@
-# Mystical Fortune Analysis Platform
+# Mystical Fortune Analysis Platform - 天命解析
 
 ## Overview
 
 This is a comprehensive fortune-telling and mystical analysis web application that combines multiple Eastern and Western divination systems. The platform collects user birth information (including optional photos) and generates personalized fortune readings using AI-powered analysis of astrology, Human Design, Zi Wei Dou Shu (紫微斗數), face reading, and I-Ching.
 
 The application is built as a full-stack TypeScript application with a React frontend and Express backend, designed to deliver an immersive, mystical user experience with traditional Chinese aesthetics.
+
+**This project includes:**
+1. A fully functional web application deployed on Replit
+2. Complete iOS Swift code reference for building a native iOS app in Xcode (located in `ios_swift_code/`)
 
 ## User Preferences
 
@@ -73,7 +77,7 @@ Preferred communication style: Simple, everyday language.
 ### AI Integration
 
 **OpenAI Integration** (`server/openai.ts`):
-- Uses OpenAI GPT-5 model for generating fortune analysis
+- Uses OpenAI GPT-4o model for generating fortune analysis
 - Text analysis: Structured prompts requesting specific fortune-telling insights based on user data
 - Vision analysis: For face reading when photo is provided
 - Zodiac calculation: Client-side calculation of Western zodiac sign based on birth date
@@ -108,7 +112,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Backend Services
 - **OpenAI API**: Core AI service for generating fortune analysis
-  - GPT-5 model for text generation
+  - GPT-4o model for text generation
   - Vision API for face reading analysis
   - Requires `OPENAI_API_KEY` environment variable
 
@@ -146,3 +150,41 @@ Preferred communication style: Simple, everyday language.
   - Noto Serif TC (Traditional Chinese serif for headers)
   - Noto Sans TC (Simplified Chinese sans for body text)
   - Playfair Display (English accent font)
+
+## iOS Swift Reference Code
+
+The `ios_swift_code/` directory contains a complete SwiftUI implementation for building a native iOS app version in Xcode.
+
+### Structure
+```
+ios_swift_code/
+├── README.md                    # Setup instructions
+├── FortuneAnalysisApp.swift    # App entry point
+├── Models/
+│   └── FortuneModels.swift     # Data models matching web schema
+├── Services/
+│   └── OpenAIService.swift     # Direct OpenAI API integration
+├── ViewModels/
+│   └── FortuneViewModel.swift  # State management
+└── Views/
+    ├── ContentView.swift       # Navigation container
+    ├── HomeView.swift          # Landing page
+    ├── AnalyzeView.swift       # Multi-step form
+    └── ResultView.swift        # Results display
+```
+
+### Key Features
+- SwiftUI with MVVM architecture
+- Direct OpenAI API integration (GPT-4o)
+- Photo picker for face reading
+- Purple/gold mystical theme matching web design
+- Dark mode optimized
+- All text in Traditional Chinese
+
+### Requirements
+- iOS 16.0+
+- Xcode 15.0+
+- Swift 5.9+
+- OpenAI API key
+
+See `ios_swift_code/README.md` for complete setup instructions.
