@@ -9,7 +9,9 @@ import type {
   ZiWeiAnalysis,
   HumanDesignAnalysis,
   AstrologyAnalysis,
-  IChing
+  IChing,
+  LifeCoach,
+  GuardianRole
 } from "@shared/schema";
 
 // Using gpt-4o for reliable availability
@@ -143,6 +145,25 @@ ${birthInfo}
 
     const analysis = JSON.parse(content);
 
+    const lifeCoach: LifeCoach = {
+      todayActions: [
+        `根據${analysis.astrology.zodiacSign}的特性，今天適合${analysis.dailyFortune.advice.split("。")[0]}`,
+        `發揮${analysis.humanDesign.strategy}的人生策略`,
+        `穿著${analysis.dailyFortune.luckyColors[0]}會增強今日能量`
+      ],
+      dailyReminder: `${input.name}，記住：你的${analysis.personality.strengths[0]}是今天的超能力。`,
+      nextSteps: analysis.career.advice,
+    };
+
+    const guardianRoles = ["光之騎士", "智慧引導者", "夢想創造者", "和諧使者", "勇敢先鋒"];
+    const roleIndex = input.name.charCodeAt(0) % guardianRoles.length;
+    const guardianRole: GuardianRole = {
+      role: guardianRoles[roleIndex],
+      element: ["火", "水", "木", "金", "土"][roleIndex],
+      specialPower: analysis.personality.strengths[0],
+      message: `你的使命是用${analysis.personality.strengths[0]}改變周圍的世界。`
+    };
+
     const result: FortuneResult = {
       id: crypto.randomUUID(),
       input,
@@ -153,6 +174,8 @@ ${birthInfo}
       humanDesign: analysis.humanDesign as HumanDesignAnalysis,
       astrology: analysis.astrology as AstrologyAnalysis,
       iChing: analysis.iChing as IChing,
+      lifeCoach,
+      guardianRole,
       generatedAt: new Date().toISOString(),
     };
 

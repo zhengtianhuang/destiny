@@ -85,7 +85,7 @@ export default function Result() {
     );
   }
 
-  const { input, personality, career, dailyFortune, faceReading, ziWei, humanDesign, astrology, iChing } = result;
+  const { input, personality, career, dailyFortune, ziWei, humanDesign, astrology, iChing, lifeCoach, guardianRole } = result;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
