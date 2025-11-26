@@ -31,6 +31,7 @@ import {
   AlertCircle,
   Lightbulb,
   RefreshCw,
+  Play,
 } from "lucide-react";
 import type { FortuneResult } from "@shared/schema";
 
@@ -396,31 +397,62 @@ export default function Result() {
             </div>
           </section>
 
-          {/* Face Reading Section (if available) */}
-          {faceReading && (
-            <section className="mb-8">
-              <Card data-testid="card-face-reading">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-serif">
-                    <Eye className="h-5 w-5 text-primary" />
-                    面相分析
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {faceReading.features.map((feature, index) => (
-                      <Badge key={index} variant="secondary">
-                        {feature}
-                      </Badge>
+          {/* Guardian Role Section */}
+          <section className="mb-8">
+            <Card className="border-accent/40 bg-gradient-to-br from-accent/5 to-accent/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-serif">
+                  <Sparkles className="h-5 w-5 text-accent-foreground" />
+                  你的守護者角色
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-2xl font-bold text-primary">{guardianRole.role}</p>
+                  <p className="text-sm text-muted-foreground">元素：{guardianRole.element}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">特殊能力</p>
+                  <p className="text-muted-foreground">{guardianRole.specialPower}</p>
+                </div>
+                <div className="rounded-lg bg-primary/10 p-3">
+                  <p className="italic text-sm">{guardianRole.message}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Life Coach Section */}
+          <section className="mb-8">
+            <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-serif">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  今日人生教練建議
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="font-medium text-sm text-primary">{lifeCoach.dailyReminder}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-2">今日行動建議</p>
+                  <ul className="space-y-2">
+                    {lifeCoach.todayActions.map((action: string, idx: number) => (
+                      <li key={idx} className="flex gap-2 text-sm text-muted-foreground">
+                        <span className="font-semibold text-primary">{idx + 1}.</span>
+                        <span>{action}</span>
+                      </li>
                     ))}
-                  </div>
-                  <p className="text-muted-foreground">
-                    {faceReading.interpretation}
-                  </p>
-                </CardContent>
-              </Card>
-            </section>
-          )}
+                  </ul>
+                </div>
+                <Button variant="outline" className="w-full gap-2 mt-4" data-testid="button-watch-ad">
+                  <Play className="h-4 w-4" />
+                  觀看廣告解鎖深度分析
+                </Button>
+              </CardContent>
+            </Card>
+          </section>
 
           {/* Detailed Breakdowns Accordion */}
           <section className="mb-8">
@@ -437,7 +469,7 @@ export default function Result() {
                   <div className="space-y-4">
                     <p className="text-muted-foreground">{personality.description}</p>
                     <div className="flex flex-wrap gap-2">
-                      {personality.traits.map((trait, index) => (
+                      {personality.traits.map((trait: string, index: number) => (
                         <Badge key={index} variant="outline">
                           {trait}
                         </Badge>
