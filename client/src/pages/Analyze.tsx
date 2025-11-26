@@ -43,7 +43,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { FortuneInput, FortuneResult } from "@shared/schema";
-import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount } from "@shared/monetization";
+import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount, addRewardAdBonus } from "@shared/monetization";
+import { adService } from "@/lib/adService";
 
 const formSchema = z.object({
   name: z.string().min(1, "請輸入姓名"),
@@ -72,6 +73,7 @@ export default function Analyze() {
   const [step, setStep] = useState(1);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [watchingAd, setWatchingAd] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -148,6 +150,27 @@ export default function Analyze() {
     setPhotoPreview(null);
     setPhotoBase64(null);
   }, []);
+
+  const handleWatchAdForMore = async () => {
+    setWatchingAd(true);
+    try {
+      await adService.showRewardedAd();
+      toast({
+        title: "✅ 廣告觀看完成",
+        description: "恭喜！獲得 2 次分析機會",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("廣告失敗:", error);
+      toast({
+        title: "廣告加載失敗",
+        description: "請檢查網絡連接",
+        variant: "destructive",
+      });
+    } finally {
+      setWatchingAd(false);
+    }
+  };
 
   const onSubmitStep1 = (data: FormData) => {
     console.log("Step 1 data:", data);
@@ -592,12 +615,33 @@ export default function Analyze() {
                       </div>
 
                       {!canAnalyze() && (
-                        <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-900/20">
-                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          <AlertDescription className="text-amber-800 dark:text-amber-300">
-                            今日分析次數已用盡（限 3 次/天）。觀看廣告可獲得額外次數！
-                          </AlertDescription>
-                        </Alert>
+                        <div className="space-y-3">
+                          <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-900/20">
+                            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <AlertDescription className="text-amber-800 dark:text-amber-300">
+                              今日分析次數已用盡（限 3 次/天）。觀看廣告可獲得額外次數！
+                            </AlertDescription>
+                          </Alert>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="w-full gap-2"
+                            onClick={handleWatchAdForMore}
+                            disabled={watchingAd}
+                          >
+                            {watchingAd ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                廣告播放中 (10秒)...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="h-4 w-4" />
+                                觀看廣告獲得 2 次機會
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       )}
 
                       <div className="flex flex-col gap-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-3">

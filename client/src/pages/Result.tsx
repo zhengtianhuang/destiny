@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { adService } from "@/lib/adService";
 import {
   Accordion,
   AccordionContent,
@@ -32,6 +34,7 @@ import {
   Lightbulb,
   RefreshCw,
   Play,
+  Loader2,
 } from "lucide-react";
 import type { FortuneResult } from "@shared/schema";
 
@@ -61,6 +64,8 @@ const genderLabel: Record<string, string> = {
 export default function Result() {
   const [, setLocation] = useLocation();
   const [result, setResult] = useState<FortuneResult | null>(null);
+  const [watchingAd, setWatchingAd] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("fortuneResult");
@@ -74,6 +79,29 @@ export default function Result() {
       setLocation("/analyze");
     }
   }, [setLocation]);
+
+  const handleWatchRewardAd = async () => {
+    setWatchingAd(true);
+    try {
+      const result = await adService.showRewardedAd();
+      if (result.earned) {
+        toast({
+          title: "✅ 廣告觀看完成",
+          description: "恭喜！獲得 2 次分析機會",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("廣告顯示失敗:", error);
+      toast({
+        title: "⚠️ 廣告顯示失敗",
+        description: "請稍後再試",
+        variant: "destructive",
+      });
+    } finally {
+      setWatchingAd(false);
+    }
+  };
 
   if (!result) {
     return (
@@ -446,9 +474,24 @@ export default function Result() {
                     ))}
                   </ul>
                 </div>
-                <Button variant="outline" className="w-full gap-2 mt-4" data-testid="button-watch-ad">
-                  <Play className="h-4 w-4" />
-                  觀看廣告解鎖深度分析
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2 mt-4" 
+                  onClick={handleWatchRewardAd}
+                  disabled={watchingAd}
+                  data-testid="button-watch-ad"
+                >
+                  {watchingAd ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      廣告播放中...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      觀看廣告獲得 2 次分析機會
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
