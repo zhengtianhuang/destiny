@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { adService } from "@/lib/adService";
+import { getCredits, spendCredits, FACE_READING_COST } from "@shared/monetization";
 import {
   Accordion,
   AccordionContent,
@@ -65,6 +66,7 @@ export default function Result() {
   const [, setLocation] = useLocation();
   const [result, setResult] = useState<FortuneResult | null>(null);
   const [watchingAd, setWatchingAd] = useState(false);
+  const [credits, setCredits] = useState(getCredits());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -85,9 +87,10 @@ export default function Result() {
     try {
       const result = await adService.showRewardedAd();
       if (result.earned) {
+        setCredits(getCredits());
         toast({
           title: "✅ 廣告觀看完成",
-          description: "恭喜！獲得 2 次分析機會",
+          description: "恭喜！獲得 2 次分析機會 + 100 點數",
           duration: 3000,
         });
       }
@@ -100,6 +103,23 @@ export default function Result() {
       });
     } finally {
       setWatchingAd(false);
+    }
+  };
+
+  const handleUnlockFaceReading = () => {
+    if (spendCredits(FACE_READING_COST)) {
+      setCredits(getCredits());
+      toast({
+        title: "✅ 面相分析已解鎖",
+        description: `消耗 ${FACE_READING_COST} 點數`,
+        duration: 2000,
+      });
+    } else {
+      toast({
+        title: "❌ 點數不足",
+        description: `需要 ${FACE_READING_COST} 點數，目前有 ${credits} 點`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -425,6 +445,17 @@ export default function Result() {
             </div>
           </section>
 
+          {/* Credits Display */}
+          <div className="mb-8 flex justify-between items-center rounded-lg bg-gradient-to-r from-amber-500/10 to-yellow-500/10 p-4 border border-amber-500/20">
+            <div>
+              <p className="text-sm text-muted-foreground">當前點數</p>
+              <p className="text-2xl font-bold text-amber-600">{credits} 點</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setCredits(getCredits())}>
+              刷新點數
+            </Button>
+          </div>
+
           {/* Guardian Role Section */}
           <section className="mb-8">
             <Card className="border-accent/40 bg-gradient-to-br from-accent/5 to-accent/10">
@@ -496,6 +527,74 @@ export default function Result() {
               </CardContent>
             </Card>
           </section>
+
+          {/* Face Reading Section */}
+          {result.faceReading && (
+            <section className="mb-8">
+              <Card data-testid="card-face-reading">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between font-serif">
+                    <span className="flex items-center gap-2">
+                      <Eye className="h-5 w-5 text-primary" />
+                      面相分析
+                    </span>
+                    <Badge variant="secondary">消耗 {FACE_READING_COST} 點</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {result.faceReading.features.map((feature: string, index: number) => (
+                      <Badge key={index} variant="outline">
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground">
+                    {result.faceReading.interpretation}
+                  </p>
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {/* Unlock Face Reading Section */}
+          {!result.faceReading && (
+            <section className="mb-8">
+              <Card className="border-amber-500/30 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 font-serif">
+                    <Eye className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    面相分析（需解鎖）
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    上傳照片時可同步進行面相分析，獲得更深入的個人洞察。
+                  </p>
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={handleUnlockFaceReading}
+                    disabled={credits < FACE_READING_COST}
+                  >
+                    {credits >= FACE_READING_COST ? (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        解鎖面相分析 ({FACE_READING_COST} 點)
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="h-4 w-4" />
+                        點數不足 ({credits}/{FACE_READING_COST})
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    💡 觀看廣告可獲得 100 點數！
+                  </p>
+                </CardContent>
+              </Card>
+            </section>
+          )}
 
           {/* Detailed Breakdowns Accordion */}
           <section className="mb-8">

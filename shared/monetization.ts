@@ -97,7 +97,7 @@ export function addRewardAdBonus(): void {
   const current = getRewardAdCount();
   localStorage.setItem("rewardAdCount", String(current + 1));
   
-  // 每看一個廣告 +2 次分析機會
+  // 每看一個廣告 +2 次分析機會 + 100 點數
   const analysisCount = getLocalAnalysisCount();
   const limit = MONETIZATION_SETTINGS.API_THROTTLE.analysisPerDay;
   const bonus = MONETIZATION_SETTINGS.API_THROTTLE.rewardAdBonus;
@@ -106,4 +106,37 @@ export function addRewardAdBonus(): void {
     "analysisCount",
     String(Math.max(0, analysisCount - bonus))
   );
+  
+  addCredits(100);
 }
+
+// ===== 點數系統 =====
+export function getCredits(): number {
+  const stored = localStorage.getItem("credits");
+  return parseInt(stored || "0", 10);
+}
+
+export function setCredits(amount: number): void {
+  localStorage.setItem("credits", String(Math.max(0, amount)));
+}
+
+export function addCredits(amount: number): void {
+  const current = getCredits();
+  setCredits(current + amount);
+}
+
+export function spendCredits(amount: number): boolean {
+  const current = getCredits();
+  if (current >= amount) {
+    setCredits(current - amount);
+    return true;
+  }
+  return false;
+}
+
+export function canUseFaceReading(): boolean {
+  return getCredits() >= 50; // 面相分析需要 50 點
+}
+
+export const FACE_READING_COST = 50; // 點數
+export const AD_REWARD_CREDITS = 100; // 看廣告獲得的點數

@@ -110,6 +110,7 @@ export interface FortuneResult {
   personality: PersonalityAnalysis;
   career: CareerAnalysis;
   dailyFortune: DailyFortune;
+  faceReading?: FaceReadingAnalysis;
   ziWei: ZiWeiAnalysis;
   humanDesign: HumanDesignAnalysis;
   astrology: AstrologyAnalysis;
