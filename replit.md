@@ -153,38 +153,58 @@ Preferred communication style: Simple, everyday language.
 
 ## iOS Swift Reference Code
 
-The `ios_swift_code/` directory contains a complete SwiftUI implementation for building a native iOS app version in Xcode.
+The `ios_swift_code/` directory contains complete SwiftUI implementations for building native iOS apps in Xcode.
 
-### Structure
+### MysticalFortune - 完整命理分析 App
+
+整合所有網頁功能的主要 iOS App，透過 API 與後端連接。
+
 ```
-ios_swift_code/
-├── README.md                    # Setup instructions
-├── FortuneAnalysisApp.swift    # App entry point
+ios_swift_code/MysticalFortune/
+├── README.md                         # 完整說明文件
+├── MysticalFortuneApp.swift         # App 進入點
 ├── Models/
-│   └── FortuneModels.swift     # Data models matching web schema
+│   └── FortuneModels.swift          # API 資料模型
 ├── Services/
-│   └── OpenAIService.swift     # Direct OpenAI API integration
-├── ViewModels/
-│   └── FortuneViewModel.swift  # State management
+│   └── APIService.swift             # 後端 API 呼叫
 └── Views/
-    ├── ContentView.swift       # Navigation container
-    ├── HomeView.swift          # Landing page
-    ├── AnalyzeView.swift       # Multi-step form
-    └── ResultView.swift        # Results display
+    ├── ContentView.swift            # TabView 主導航
+    ├── AnalyzeView.swift            # 命理分析表單
+    ├── ResultView.swift             # 分析結果顯示
+    └── FortuneStickView.swift       # 籤筒抽籤
 ```
 
-### Key Features
-- SwiftUI with MVVM architecture
-- Direct OpenAI API integration (GPT-4o)
-- Photo picker for face reading
-- Purple/gold mystical theme matching web design
-- Dark mode optimized
-- All text in Traditional Chinese
+**功能特色**：
+- 🌟 星座分析 + 🧬 人類圖 + ☯️ 紫微斗數
+- 👁️ 面相分析（照片上傳）
+- ☰ 易經占卜
+- 🏮 籤筒求籤（CoreMotion 搖動偵測）
+- 透過 REST API 呼叫後端 AI 分析
+
+### FortuneStick - 獨立籤筒 App
+
+輕量級獨立籤筒應用，包含 100+ 籤詩。
+
+```
+ios_swift_code/FortuneStick/
+├── README.md
+├── FortuneStickApp.swift
+├── Models/
+│   └── FortuneStickModels.swift     # 100+ 籤詩資料
+└── Views/
+    └── ShakeFortuneView.swift       # 搖籤介面
+```
+
+### iOS 開發架構決策
+
+- **選擇 Swift** 而非 Expo/React Native
+- **原因**：CoreMotion 搖動偵測、相機整合、原生效能
+- **後端整合**：iOS App 呼叫現有 `/api/analyze` API，不重複 OpenAI 邏輯
 
 ### Requirements
 - iOS 16.0+
 - Xcode 15.0+
 - Swift 5.9+
-- OpenAI API key
+- 後端 API 網址設定
 
-See `ios_swift_code/README.md` for complete setup instructions.
+See `ios_swift_code/MysticalFortune/README.md` for complete setup instructions.
