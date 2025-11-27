@@ -155,23 +155,27 @@ Preferred communication style: Simple, everyday language.
 
 The `ios_swift_code/` directory contains complete SwiftUI implementations for building native iOS apps in Xcode.
 
-### MysticalFortune - 完整命理分析 App
+### MysticalFortune - 完整命理分析 App（含變現機制）
 
-整合所有網頁功能的主要 iOS App，透過 API 與後端連接。
+整合所有網頁功能的主要 iOS App，透過 API 與後端連接，並包含完整的廣告和訂閱變現系統。
 
 ```
 ios_swift_code/MysticalFortune/
 ├── README.md                         # 完整說明文件
-├── MysticalFortuneApp.swift         # App 進入點
+├── MysticalFortuneApp.swift         # App 進入點 + SDK 初始化
 ├── Models/
 │   └── FortuneModels.swift          # API 資料模型
 ├── Services/
-│   └── APIService.swift             # 後端 API 呼叫
+│   ├── APIService.swift             # 後端 API 呼叫
+│   ├── AdManager.swift              # AdMob 獎勵廣告管理器
+│   └── SubscriptionManager.swift    # StoreKit 2 訂閱管理器
 └── Views/
-    ├── ContentView.swift            # TabView 主導航
+    ├── ContentView.swift            # TabView 主導航 + 設定頁
     ├── AnalyzeView.swift            # 命理分析表單
     ├── ResultView.swift             # 分析結果顯示
-    └── FortuneStickView.swift       # 籤筒抽籤
+    ├── FortuneStickView.swift       # 籤筒抽籤
+    ├── AdGateView.swift             # 廣告閘門元件
+    └── PaywallView.swift            # 訂閱付費牆
 ```
 
 **功能特色**：
@@ -180,6 +184,16 @@ ios_swift_code/MysticalFortune/
 - ☰ 易經占卜
 - 🏮 籤筒求籤（CoreMotion 搖動偵測）
 - 透過 REST API 呼叫後端 AI 分析
+- 📺 AdMob 獎勵廣告整合
+- 💎 StoreKit 2 訂閱制（月付 $2.99 / 年付 $19.99）
+
+**商業模式**：
+- 免費版：使用籤筒或 AI 分析前需觀看廣告
+- 至尊版：訂閱後免廣告、無限使用
+
+**架構決策**：
+- OpenAI 金鑰保留在後端（安全考量，避免 App 反編譯洩漏）
+- iOS App 透過 REST API 呼叫後端，後端統一處理 AI 分析
 
 ### FortuneStick - 獨立籤筒 App
 
