@@ -1,6 +1,9 @@
 import StoreKit
 import SwiftUI
 
+// 使用 typealias 避免與 Google SDK 的 Transaction 衝突
+typealias StoreTransaction = StoreKit.Transaction
+
 @MainActor
 class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
@@ -53,7 +56,7 @@ class SubscriptionManager: ObservableObject {
     }
     
     // MARK: - 購買產品
-    func purchase(_ product: Product) async throws -> Transaction? {
+    func purchase(_ product: Product) async throws -> StoreTransaction? {
         isLoading = true
         
         let result = try await product.purchase()
@@ -86,7 +89,7 @@ class SubscriptionManager: ObservableObject {
     func updatePurchasedProducts() async {
         var purchasedIDs = Set<String>()
         
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreTransaction.currentEntitlements {
             guard case .verified(let transaction) = result else {
                 continue
             }
@@ -103,7 +106,7 @@ class SubscriptionManager: ObservableObject {
     // MARK: - 監聽交易更新
     func listenForTransactions() -> Task<Void, Error> {
         return Task.detached {
-            for await result in Transaction.updates {
+            for await result in StoreTransaction.updates {
                 guard case .verified(let transaction) = result else {
                     continue
                 }
