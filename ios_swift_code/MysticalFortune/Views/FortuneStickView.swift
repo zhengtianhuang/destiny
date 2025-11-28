@@ -203,8 +203,8 @@ struct FortuneStickView: View {
             .onDisappear {
                 viewModel.stopMotionDetection()
             }
-            .onChange(of: viewModel.drawnStick) { stick in
-                if stick != nil {
+            .onChange(of: viewModel.drawnStick) { oldValue, newValue in
+                if newValue != nil {
                     showResult = true
                 }
             }
@@ -500,13 +500,17 @@ enum StickLevel: String {
     }
 }
 
-struct FortuneStickData: Identifiable {
+struct FortuneStickData: Identifiable, Equatable {
     let id = UUID()
     let number: String
     let level: StickLevel
     let poem: String
     let interpretation: String
     let advice: String
+    
+    static func == (lhs: FortuneStickData, rhs: FortuneStickData) -> Bool {
+        lhs.id == rhs.id
+    }
     
     static let allSticks: [FortuneStickData] = [
         FortuneStickData(number: "第一籤", level: .daJi, poem: "日出東方照大地\n春風得意馬蹄疾\n貴人相助事事順\n心想事成在今時", interpretation: "此籤大吉大利，如旭日東昇，萬物更新。所問之事將得貴人相助，順風順水，心想事成。", advice: "把握當下機會，勇敢前行，好運正在眷顧你。"),
