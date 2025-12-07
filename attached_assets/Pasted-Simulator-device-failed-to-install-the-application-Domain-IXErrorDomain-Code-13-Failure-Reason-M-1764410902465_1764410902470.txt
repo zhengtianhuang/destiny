@@ -1,0 +1,46 @@
+Simulator device failed to install the application.
+Domain: IXErrorDomain
+Code: 13
+Failure Reason: Missing bundle ID.
+User Info: {
+    DVTErrorCreationDateKey = "2025-11-29 10:08:02 +0000";
+    FunctionName = "+[IXPlaceholder _placeholderForBundle:client:withParent:installType:metadata:placeholderType:mayBeDeltaPackage:isFromSerializedPlaceholder:location:error:]";
+    IDERunOperationFailingWorker = IDELaunchiPhoneSimulatorLauncher;
+    SimCallingSelector = "installApplication:withOptions:error:";
+    SourceFileLine = 752;
+}
+--
+Failed to get bundle ID from /Users/huangzhengtian/Library/Developer/Xcode/DerivedData/destinyApp-bdyuikfhnzseloaouuumygxkopph/Build/Products/Debug-iphonesimulator/destinyApp.app
+Domain: IXErrorDomain
+Code: 13
+Failure Reason: Missing bundle ID.
+User Info: {
+    FunctionName = "+[IXPlaceholder _placeholderForBundle:client:withParent:installType:metadata:placeholderType:mayBeDeltaPackage:isFromSerializedPlaceholder:location:error:]";
+    SourceFileLine = 752;
+}
+--
+
+Event Metadata: com.apple.dt.IDERunOperationWorkerFinished : {
+    "device_identifier" = "BECB79FE-6FB7-4ABE-B4E2-0FFA233559FE";
+    "device_model" = "iPad17,4";
+    "device_osBuild" = "26.1 (23B86)";
+    "device_osBuild_monotonic" = 2301008600;
+    "device_os_variant" = 1;
+    "device_platform" = "com.apple.platform.iphonesimulator";
+    "device_platform_family" = 2;
+    "device_reality" = 2;
+    "device_thinningType" = "iPad17,4-A";
+    "device_transport" = 4;
+    "launchSession_schemeCommand" = Run;
+    "launchSession_schemeCommand_enum" = 1;
+    "launchSession_targetArch" = arm64;
+    "launchSession_targetArch_enum" = 6;
+    "operation_duration_ms" = 2147;
+    "operation_errorCode" = 13;
+    "operation_errorDomain" = IXErrorDomain;
+    "operation_errorWorker" = IDELaunchiPhoneSimulatorLauncher;
+    "operation_error_reportable" = 1;
+    "operation_name" = IDERunOperationWorkerGroup;
+    "param_consoleMode" = 1;
+    "param_debugger_attachToExtensions" = 0;
+    "param_debugger_attachToX
