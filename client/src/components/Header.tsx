@@ -1,11 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./ThemeToggle";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/i18n/LocaleContext";
 
 export function Header() {
   const [location] = useLocation();
   const isHome = location === "/";
+  const { t } = useLocale();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-lg">
@@ -16,7 +19,7 @@ export function Header() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <span className="font-serif text-xl font-semibold tracking-tight">
-              天命解析
+              {t("home.title")}
             </span>
           </div>
         </Link>
@@ -25,10 +28,11 @@ export function Header() {
           {!isHome && (
             <Link href="/">
               <Button variant="ghost" size="sm" data-testid="link-back-home">
-                返回首頁
+                {t("result.backHome")}
               </Button>
             </Link>
           )}
+          <LanguageSwitcher />
           <ThemeToggle />
         </nav>
       </div>
