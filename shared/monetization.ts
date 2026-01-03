@@ -1,5 +1,11 @@
 // 廣告和貨幣化系統配置
 
+// 取得今天的日期字串（統一格式）
+function getTodayString(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
 // 清理可能損壞的 localStorage 資料
 export function cleanupCorruptedData(): void {
   try {
@@ -8,21 +14,25 @@ export function cleanupCorruptedData(): void {
       const value = localStorage.getItem(key);
       if (value !== null) {
         const num = parseInt(value, 10);
-        if (isNaN(num) || num < 0 || num > 1000) {
+        if (isNaN(num) || num < 0 || num > 100) {
           localStorage.removeItem(key);
+          console.log(`[Cleanup] Removed corrupted ${key}: ${value}`);
         }
       }
     }
-    // 檢查日期格式
+    // 檢查日期格式 - 如果太長或包含奇怪字符，移除
     const dateKeys = ['analysisDate', 'rewardAdDate'];
     for (const key of dateKeys) {
       const value = localStorage.getItem(key);
-      if (value !== null && value.length > 50) {
-        localStorage.removeItem(key);
+      if (value !== null) {
+        if (value.length > 20 || value.includes('[') || value.includes('{')) {
+          localStorage.removeItem(key);
+          console.log(`[Cleanup] Removed corrupted date ${key}: ${value}`);
+        }
       }
     }
-  } catch {
-    // 忽略錯誤
+  } catch (e) {
+    console.log('[Cleanup] Error during cleanup:', e);
   }
 }
 
@@ -84,22 +94,29 @@ export function getLocalAnalysisCount(): number {
   try {
     const stored = localStorage.getItem("analysisCount");
     const lastDate = localStorage.getItem("analysisDate");
-    const today = new Date().toDateString();
+    const today = getTodayString();
 
-    if (lastDate !== today) {
+    // 如果日期不是今天，重置計數
+    if (!lastDate || lastDate !== today) {
       localStorage.setItem("analysisCount", "0");
       localStorage.setItem("analysisDate", today);
+      console.log(`[Usage] Reset count for new day: ${today}`);
       return 0;
     }
 
+    // 解析計數
     const count = parseInt(stored || "0", 10);
+    
     // 如果解析失敗或數值不合理，重置為 0
     if (isNaN(count) || count < 0 || count > 100) {
+      console.log(`[Usage] Invalid count detected: ${stored}, resetting to 0`);
       localStorage.setItem("analysisCount", "0");
       return 0;
     }
+    
     return count;
-  } catch {
+  } catch (e) {
+    console.log('[Usage] localStorage error:', e);
     // localStorage 不可用時，允許使用
     return 0;
   }
@@ -122,17 +139,26 @@ export function getRemainingAnalysis(): number {
 }
 
 export function getRewardAdCount(): number {
-  const stored = localStorage.getItem("rewardAdCount");
-  const lastDate = localStorage.getItem("rewardAdDate");
-  const today = new Date().toDateString();
+  try {
+    const stored = localStorage.getItem("rewardAdCount");
+    const lastDate = localStorage.getItem("rewardAdDate");
+    const today = getTodayString();
 
-  if (lastDate !== today) {
-    localStorage.setItem("rewardAdCount", "0");
-    localStorage.setItem("rewardAdDate", today);
+    if (!lastDate || lastDate !== today) {
+      localStorage.setItem("rewardAdCount", "0");
+      localStorage.setItem("rewardAdDate", today);
+      return 0;
+    }
+
+    const count = parseInt(stored || "0", 10);
+    if (isNaN(count) || count < 0 || count > 100) {
+      localStorage.setItem("rewardAdCount", "0");
+      return 0;
+    }
+    return count;
+  } catch {
     return 0;
   }
-
-  return parseInt(stored || "0", 10);
 }
 
 export function addRewardAdBonus(): void {
@@ -182,3 +208,19 @@ export function canUseFaceReading(): boolean {
 
 export const FACE_READING_COST = 50; // 點數
 export const AD_REWARD_CREDITS = 100; // 看廣告獲得的點數
+
+// 手動重置所有使用資料（可在瀏覽器控制台呼叫）
+export function resetAllUsageData(): void {
+  try {
+    const keys = ['analysisCount', 'analysisDate', 'rewardAdCount', 'rewardAdDate', 'credits'];
+    keys.forEach(key => localStorage.removeItem(key));
+    console.log('[Reset] 已清除所有使用資料，現在可以正常使用了！');
+  } catch (e) {
+    console.log('[Reset] 清除失敗:', e);
+  }
+}
+
+// 將 resetAllUsageData 暴露到全域，方便使用者在控制台呼叫
+if (typeof window !== 'undefined') {
+  (window as unknown as { resetFortuneData: typeof resetAllUsageData }).resetFortuneData = resetAllUsageData;
+}
