@@ -12,16 +12,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate input
       const input = fortuneInputSchema.parse(req.body) as FortuneInput;
       
+      console.log("📸 Photo provided:", !!input.photoBase64);
+      if (input.photoBase64) {
+        console.log("📸 Photo base64 length:", input.photoBase64.length);
+      }
+      
       // Get main fortune analysis
       const result = await analyzeFortuneWithAI(input);
       
       // If photo is provided, add face reading analysis
       if (input.photoBase64) {
+        console.log("🔍 Starting face reading analysis...");
         try {
           const faceReading = await analyzeFaceWithAI(input.photoBase64);
+          console.log("✅ Face reading completed:", faceReading);
           (result as any).faceReading = faceReading;
         } catch (error) {
-          console.error("Face reading error:", error);
+          console.error("❌ Face reading error:", error);
           // Continue without face reading if it fails
         }
       }
