@@ -17,59 +17,63 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-const features = [
-  {
-    icon: Star,
-    title: "西洋星盤",
-    description: "根據您的出生時間，解讀太陽、月亮與上升星座的影響",
-  },
-  {
-    icon: Compass,
-    title: "人類圖",
-    description: "探索您獨特的能量類型、人生策略與內在權威",
-  },
-  {
-    icon: Moon,
-    title: "紫微斗數",
-    description: "傳統中華命理精髓，分析命宮主星與人生格局",
-  },
-  {
-    icon: Eye,
-    title: "面相分析",
-    description: "透過 AI 識別面部特徵，解讀您的性格與運勢",
-  },
-  {
-    icon: BookOpen,
-    title: "易經卜卦",
-    description: "千年智慧指引，為您的當下處境提供啟示",
-  },
-];
-
-const insights = [
-  {
-    icon: User,
-    title: "個性特質",
-    description: "深入了解您與生俱來的性格特點與潛在才能",
-  },
-  {
-    icon: TrendingUp,
-    title: "職業方向",
-    description: "發現最適合您發展的事業領域與成功策略",
-  },
-  {
-    icon: Palette,
-    title: "幸運顏色",
-    description: "每日最適合穿著的顏色，提升運勢能量",
-  },
-  {
-    icon: Hash,
-    title: "幸運號碼",
-    description: "專屬於您的幸運數字組合與樂透建議",
-  },
-];
+import { useLocale } from "@/i18n/LocaleContext";
 
 export default function Home() {
+  const { t } = useLocale();
+  const h = t.home;
+
+  const features = [
+    {
+      icon: Star,
+      title: h.features.astrology,
+      description: h.features.astrologyDesc,
+    },
+    {
+      icon: Compass,
+      title: h.features.humanDesign,
+      description: h.features.humanDesignDesc,
+    },
+    {
+      icon: Moon,
+      title: h.features.ziWei,
+      description: h.features.ziWeiDesc,
+    },
+    {
+      icon: Eye,
+      title: h.features.faceReading,
+      description: h.features.faceReadingDesc,
+    },
+    {
+      icon: BookOpen,
+      title: h.features.iChing,
+      description: h.features.iChingDesc,
+    },
+  ];
+
+  const insights = [
+    {
+      icon: User,
+      title: h.insights.personality,
+      description: h.insights.personalityDesc,
+    },
+    {
+      icon: TrendingUp,
+      title: h.insights.career,
+      description: h.insights.careerDesc,
+    },
+    {
+      icon: Palette,
+      title: h.insights.luckyColor,
+      description: h.insights.luckyColorDesc,
+    },
+    {
+      icon: Hash,
+      title: h.insights.luckyNumber,
+      description: h.insights.luckyNumberDesc,
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -88,20 +92,19 @@ export default function Home() {
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                融合東西方命理智慧
+                {h.tagline}
               </span>
             </div>
 
             <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              探索您的
+              {h.heroTitle1}
               <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
-                天命軌跡
+                {h.heroTitle2}
               </span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-              結合星盤、人類圖、紫微斗數、面相與易經，
-              為您揭示個性特質、職業方向、運勢走向與專屬幸運號碼
+              {h.description}
             </p>
 
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -111,7 +114,7 @@ export default function Home() {
                   className="group gap-2 px-8 py-6 text-lg rounded-full"
                   data-testid="button-start-analysis"
                 >
-                  開始解析
+                  {h.startButton}
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -123,7 +126,7 @@ export default function Home() {
                   data-testid="button-start-oracle"
                 >
                   <Scroll className="h-5 w-5" />
-                  提問求籤
+                  {h.oracleButton}
                 </Button>
               </Link>
             </div>
@@ -136,10 +139,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-              五大命理系統
+              {h.featuresTitle}
             </h2>
             <p className="mt-4 text-muted-foreground">
-              融會貫通東西方命理精髓，提供全方位的人生洞察
+              {h.featuresSubtitle}
             </p>
           </div>
 
@@ -172,10 +175,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-              您將獲得的洞察
+              {h.insightsTitle}
             </h2>
             <p className="mt-4 text-muted-foreground">
-              專屬於您的個性化分析結果，指引生活各個層面
+              {h.insightsSubtitle}
             </p>
           </div>
 
@@ -208,10 +211,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-              準備好探索命運了嗎？
+              {h.ctaTitle}
             </h2>
             <p className="mt-4 text-muted-foreground">
-              只需幾分鐘，即可獲得專屬於您的完整命理分析報告
+              {h.ctaSubtitle}
             </p>
             <div className="mt-8">
               <Link href="/analyze">
@@ -220,7 +223,7 @@ export default function Home() {
                   className="group gap-2 px-8 py-6 text-lg rounded-full"
                   data-testid="button-cta-analyze"
                 >
-                  立即開始
+                  {h.ctaButton}
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
