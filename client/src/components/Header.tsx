@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { Sparkles } from "lucide-react";
+import { Sparkles, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/i18n/LocaleContext";
 
@@ -32,6 +32,11 @@ export function Header() {
               </Button>
             </Link>
           )}
+          <Link href="/history">
+            <Button variant="ghost" size="icon" data-testid="link-history">
+              <History className="h-5 w-5" />
+            </Button>
+          </Link>
           <LanguageSwitcher />
           <ThemeToggle />
         </nav>

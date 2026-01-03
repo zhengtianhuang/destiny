@@ -8,6 +8,7 @@ import { LocaleProvider } from "@/i18n/LocaleContext";
 import Home from "@/pages/Home";
 import Analyze from "@/pages/Analyze";
 import Result from "@/pages/Result";
+import History from "@/pages/History";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/analyze" component={Analyze} />
       <Route path="/result" component={Result} />
+      <Route path="/history" component={History} />
       <Route component={NotFound} />
     </Switch>
   );

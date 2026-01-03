@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { addToHistory } from "@/lib/historyStorage";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ import {
 import type { FortuneInput, FortuneResult } from "@shared/schema";
 import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount, addRewardAdBonus } from "@shared/monetization";
 import { adService } from "@/lib/adService";
+import heic2any from "heic2any";
 
 const formSchema = z.object({
   name: z.string().min(1, "請輸入姓名"),
@@ -104,6 +106,7 @@ export default function Analyze() {
       console.log("Analysis response:", data);
       if (data.success && data.result) {
         sessionStorage.setItem("fortuneResult", JSON.stringify(data.result));
+        addToHistory(data.result);
         setLocation("/result");
       } else {
         toast({
@@ -123,7 +126,9 @@ export default function Analyze() {
     },
   });
 
-  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isConvertingPhoto, setIsConvertingPhoto] = useState(false);
+
+  const handlePhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -135,6 +140,42 @@ export default function Analyze() {
         return;
       }
 
+      if (isConvertingPhoto) {
+        return;
+      }
+
+      let processedFile = file;
+      const isHeic = file.type === "image/heic" || 
+                     file.type === "image/heif" || 
+                     file.name.toLowerCase().endsWith(".heic") ||
+                     file.name.toLowerCase().endsWith(".heif");
+
+      if (isHeic) {
+        setIsConvertingPhoto(true);
+        try {
+          const convertedBlob = await heic2any({
+            blob: file,
+            toType: "image/jpeg",
+            quality: 0.85,
+          });
+          
+          const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+          processedFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, ".jpg"), {
+            type: "image/jpeg",
+          });
+        } catch (error) {
+          console.error("HEIC conversion error:", error);
+          toast({
+            title: "照片轉換失敗",
+            description: "無法轉換 HEIC 格式，請改用 JPG 或 PNG",
+            variant: "destructive",
+          });
+          setIsConvertingPhoto(false);
+          return;
+        }
+        setIsConvertingPhoto(false);
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -142,7 +183,7 @@ export default function Analyze() {
         const base64 = result.split(",")[1];
         setPhotoBase64(base64);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processedFile);
     }
   }, [toast]);
 
@@ -570,20 +611,31 @@ export default function Analyze() {
                         {!photoPreview ? (
                           <label
                             htmlFor="photo-upload"
-                            className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border/60 bg-muted/30 p-8 transition-colors hover:border-primary/40 hover:bg-muted/50"
+                            className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border/60 bg-muted/30 p-8 transition-colors hover:border-primary/40 hover:bg-muted/50 ${isConvertingPhoto ? "pointer-events-none opacity-50" : ""}`}
                             data-testid="input-photo-upload-area"
                           >
-                            <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
-                            <span className="text-sm font-medium">
-                              點擊或拖曳上傳照片
-                            </span>
+                            {isConvertingPhoto ? (
+                              <>
+                                <Loader2 className="mb-3 h-10 w-10 animate-spin text-primary" />
+                                <span className="text-sm font-medium">
+                                  正在轉換照片格式...
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
+                                <span className="text-sm font-medium">
+                                  點擊或拖曳上傳照片
+                                </span>
+                              </>
+                            )}
                             <span className="mt-1 text-xs text-muted-foreground">
-                              支援 JPG、PNG，檔案大小限 5MB
+                              支援 JPG、PNG、HEIC (iPhone)
                             </span>
                             <input
                               id="photo-upload"
                               type="file"
-                              accept="image/jpeg,image/png,image/webp"
+                              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                               className="hidden"
                               onChange={handlePhotoUpload}
                               data-testid="input-photo-upload"
