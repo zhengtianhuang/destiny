@@ -126,9 +126,21 @@ export interface FortuneResult {
 }
 
 // 提問抽籤分析
+export const oraclePersonaSchema = z.object({
+  name: z.string(),
+  birthYear: z.number(),
+  birthMonth: z.number(),
+  birthDay: z.number(),
+  gender: z.string(),
+  zodiacSign: z.string().optional(),
+});
+
+export type OraclePersona = z.infer<typeof oraclePersonaSchema>;
+
 export const oracleQuestionSchema = z.object({
   question: z.string().min(1, "請輸入您的問題"),
   category: z.enum(["love", "career", "health", "wealth", "general"]).optional(),
+  persona: oraclePersonaSchema.optional(),
 });
 
 export type OracleQuestion = z.infer<typeof oracleQuestionSchema>;

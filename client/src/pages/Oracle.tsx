@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -26,7 +26,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { OracleReading, OracleResponse } from "@shared/schema";
+import { getHistory, HistoryItem } from "@/lib/historyStorage";
+import type { OracleReading, OracleResponse, OraclePersona } from "@shared/schema";
 import {
   Sparkles,
   Loader2,
@@ -38,6 +39,7 @@ import {
   Wallet,
   Activity,
   CircleDot,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -210,6 +212,28 @@ export default function Oracle() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [reading, setReading] = useState<OracleReading | null>(null);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string>("none");
+
+  useEffect(() => {
+    const items = getHistory();
+    setHistoryItems(items);
+  }, []);
+
+  const getSelectedPersona = (): OraclePersona | undefined => {
+    if (selectedPersonaId === "none") return undefined;
+    const item = historyItems.find(h => h.id === selectedPersonaId);
+    if (!item) return undefined;
+    const input = item.result.input;
+    return {
+      name: input.name,
+      birthYear: input.birthYear,
+      birthMonth: input.birthMonth,
+      birthDay: input.birthDay,
+      gender: input.gender,
+      zodiacSign: item.result.astrology?.zodiacSign,
+    };
+  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -221,7 +245,9 @@ export default function Oracle() {
 
   const mutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      const response = await apiRequest("POST", "/api/oracle", data);
+      const persona = getSelectedPersona();
+      const payload = persona ? { ...data, persona } : data;
+      const response = await apiRequest("POST", "/api/oracle", payload);
       return response.json() as Promise<OracleResponse>;
     },
     onSuccess: (data) => {
@@ -348,6 +374,41 @@ export default function Oracle() {
                                 </FormItem>
                               )}
                             />
+
+                            {historyItems.length > 0 && (
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium leading-none">
+                                  帶入個人資料（選填）
+                                </label>
+                                <Select
+                                  value={selectedPersonaId}
+                                  onValueChange={setSelectedPersonaId}
+                                >
+                                  <SelectTrigger data-testid="select-persona" className="w-full">
+                                    <SelectValue placeholder="選擇歷史記錄中的個人資料" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">
+                                      <div className="flex items-center gap-2">
+                                        <CircleDot className="w-4 h-4" />
+                                        不帶入個人資料
+                                      </div>
+                                    </SelectItem>
+                                    {historyItems.map((item) => (
+                                      <SelectItem key={item.id} value={item.id} data-testid={`select-persona-${item.id}`}>
+                                        <div className="flex items-center gap-2">
+                                          <User className="w-4 h-4" />
+                                          {item.name} ({item.result.input.birthYear}年{item.result.input.birthMonth}月{item.result.input.birthDay}日)
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                  帶入個人資料可讓籤詩更貼合您的命理背景
+                                </p>
+                              </div>
+                            )}
 
                             <FormField
                               control={form.control}

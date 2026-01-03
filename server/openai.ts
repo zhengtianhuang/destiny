@@ -286,7 +286,7 @@ export async function analyzeFaceWithAI(base64Image: string): Promise<FaceReadin
   }
 }
 
-export async function generateOracleReading(question: string, category?: string): Promise<OracleReading> {
+export async function generateOracleReading(question: string, category?: string, persona?: { name: string; birthYear: number; birthMonth: number; birthDay: number; gender: string; zodiacSign?: string }): Promise<OracleReading> {
   const stickNumber = Math.floor(Math.random() * 100) + 1;
   const today = new Date().toLocaleDateString("zh-TW");
   
@@ -298,8 +298,17 @@ export async function generateOracleReading(question: string, category?: string)
     general: "綜合運勢"
   }[category] || "綜合運勢" : "綜合運勢";
 
+  const personaInfo = persona ? `
+求問者資料：
+- 姓名：${persona.name}
+- 出生年月日：${persona.birthYear}年${persona.birthMonth}月${persona.birthDay}日
+- 性別：${persona.gender === "male" ? "男" : persona.gender === "female" ? "女" : "其他"}
+${persona.zodiacSign ? `- 星座：${persona.zodiacSign}` : ""}
+請結合求問者的命理背景，給予更個人化的解籤。` : "";
+
   const systemPrompt = `你是一位慈悲智慧的廟宇籤詩解籤大師，擁有深厚的傳統文化底蘊。
 你要根據求問者的問題，以及抽到的籤號，給出富有詩意且具有智慧的解答。
+${persona ? "你會根據求問者的生辰資料，結合命理學給予更貼合個人的指引。" : ""}
 回應必須使用繁體中文，並以 JSON 格式輸出。
 籤詩要有古典韻味，解籤要結合現代生活，給予實用的指引。
 語氣要溫和、慈悲、充滿智慧。`;
@@ -307,13 +316,13 @@ export async function generateOracleReading(question: string, category?: string)
   const prompt = `求問者在「${categoryText}」方面有此疑問：「${question}」
 今日日期：${today}
 抽到籤號：第 ${stickNumber} 籤
-
+${personaInfo}
 請以 JSON 格式給出籤詩解答：
 {
   "stickType": "籤等（從'上上籤'、'上籤'、'中籤'、'下籤'、'下下籤'中選一）",
   "poem": "四句七言籤詩，每句用換行符分隔",
-  "interpretation": "150字左右的籤詩白話解釋，要針對求問者的具體問題",
-  "advice": "100字左右的具體行動建議",
+  "interpretation": "150字左右的籤詩白話解釋，要針對求問者的具體問題${persona ? "，並結合其命理背景" : ""}",
+  "advice": "100字左右的具體行動建議${persona ? "，針對此人的性格特質給予個人化建議" : ""}",
   "luckyDirection": "今日吉方（如：東南方、正北方）",
   "luckyTime": "吉時（如：辰時(7-9點)、午時(11-13點)）"
 }`;

@@ -83,10 +83,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Oracle reading endpoint
   app.post("/api/oracle", async (req, res) => {
     try {
-      const { question, category } = oracleQuestionSchema.parse(req.body);
+      const { question, category, persona } = oracleQuestionSchema.parse(req.body);
       
-      console.log("🔮 Starting oracle reading for:", question);
-      const reading = await generateOracleReading(question, category);
+      console.log("🔮 Starting oracle reading for:", question, persona ? `(with persona: ${persona.name})` : "");
+      const reading = await generateOracleReading(question, category, persona);
       console.log("✅ Oracle reading completed");
       
       res.json({ success: true, reading });
