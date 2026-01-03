@@ -1,5 +1,36 @@
 // 廣告和貨幣化系統配置
 
+// 清理可能損壞的 localStorage 資料
+export function cleanupCorruptedData(): void {
+  try {
+    const keysToCheck = ['analysisCount', 'rewardAdCount', 'credits'];
+    for (const key of keysToCheck) {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        const num = parseInt(value, 10);
+        if (isNaN(num) || num < 0 || num > 1000) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+    // 檢查日期格式
+    const dateKeys = ['analysisDate', 'rewardAdDate'];
+    for (const key of dateKeys) {
+      const value = localStorage.getItem(key);
+      if (value !== null && value.length > 50) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // 忽略錯誤
+  }
+}
+
+// 自動執行清理
+if (typeof window !== 'undefined') {
+  cleanupCorruptedData();
+}
+
 export interface AdConfig {
   enabled: boolean;
   rewardAdInterval: number; // 毫秒
