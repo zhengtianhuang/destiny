@@ -35,7 +35,10 @@ export default function HistoryPage() {
   };
 
   const handleReanalyze = (item: HistoryItem) => {
-    sessionStorage.setItem("prefillData", JSON.stringify(item.result.input));
+    sessionStorage.setItem("prefillData", JSON.stringify({
+      input: item.result.input,
+      previousResult: item.result,
+    }));
     setLocation("/analyze");
   };
 

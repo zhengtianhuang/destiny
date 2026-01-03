@@ -76,6 +76,7 @@ export default function Analyze() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [watchingAd, setWatchingAd] = useState(false);
+  const [previousResult, setPreviousResult] = useState<FortuneResult | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -97,21 +98,25 @@ export default function Analyze() {
     if (prefillDataStr) {
       try {
         const prefillData = JSON.parse(prefillDataStr);
+        const input = prefillData.input || prefillData;
         form.reset({
-          name: prefillData.name || "",
-          birthYear: String(prefillData.birthYear) || "",
-          birthMonth: String(prefillData.birthMonth) || "",
-          birthDay: String(prefillData.birthDay) || "",
-          gender: prefillData.gender || "",
-          birthHour: prefillData.birthHour !== undefined ? String(prefillData.birthHour) : "",
-          birthMinute: prefillData.birthMinute !== undefined ? String(prefillData.birthMinute) : "",
-          birthPlace: prefillData.birthPlace || "",
-          currentLocation: prefillData.currentLocation || "",
+          name: input.name || "",
+          birthYear: String(input.birthYear) || "",
+          birthMonth: String(input.birthMonth) || "",
+          birthDay: String(input.birthDay) || "",
+          gender: input.gender || "",
+          birthHour: input.birthHour !== undefined ? String(input.birthHour) : "",
+          birthMinute: input.birthMinute !== undefined ? String(input.birthMinute) : "",
+          birthPlace: input.birthPlace || "",
+          currentLocation: input.currentLocation || "",
         });
+        if (prefillData.previousResult) {
+          setPreviousResult(prefillData.previousResult);
+        }
         sessionStorage.removeItem("prefillData");
         toast({
           title: "已載入資料",
-          description: "已從歷史記錄載入您的資料",
+          description: "已從歷史記錄載入您的資料，可查看上次分析結果",
         });
       } catch (error) {
         console.error("Failed to parse prefill data:", error);
@@ -282,6 +287,83 @@ export default function Analyze() {
       <main className="flex-1 py-12 md:py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl">
+            {/* Previous Result Summary */}
+            {previousResult && (
+              <Card className="mb-6 border-primary/30 bg-primary/5">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      上次分析結果
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPreviousResult(null)}
+                      data-testid="button-close-previous-result"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid gap-4 text-sm">
+                    {previousResult.astrology && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{previousResult.astrology.zodiacSign}</p>
+                          <p className="text-muted-foreground line-clamp-2">
+                            {previousResult.astrology.interpretation}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {previousResult.personality && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">性格特質</p>
+                          <p className="text-muted-foreground">
+                            {previousResult.personality.traits?.slice(0, 3).join("、")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {previousResult.dailyFortune && (
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2">
+                          <Zap className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">幸運色 & 數字</p>
+                          <p className="text-muted-foreground">
+                            {previousResult.dailyFortune.luckyColors?.join("、")} | {previousResult.dailyFortune.luckyNumbers?.join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 w-full"
+                    onClick={() => {
+                      sessionStorage.setItem("fortuneResult", JSON.stringify(previousResult));
+                      setLocation("/result");
+                    }}
+                    data-testid="button-view-full-previous-result"
+                  >
+                    查看完整結果
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Progress indicator */}
             <div className="mb-8 flex items-center justify-center gap-4">
               <div
