@@ -50,8 +50,9 @@ Preferred communication style: Simple, everyday language.
 - Development: Vite dev server with HMR (hot module replacement) middleware
 - Production: Pre-built static assets served from `dist/public`
 
-**API Structure**: RESTful API with two main endpoints:
+**API Structure**: RESTful API with three main endpoints:
 - `POST /api/analyze` - Accepts user input, performs AI analysis, returns fortune results
+- `POST /api/analyze-face` - Face-only analysis endpoint for re-analyzing just the face reading
 - `GET /api/health` - Health check endpoint
 
 **Input Validation**: Zod schemas shared between client and server (`shared/schema.ts`) ensure type safety across the stack.
@@ -69,10 +70,21 @@ Preferred communication style: Simple, everyday language.
   - `AstrologyAnalysis`: Western zodiac interpretation
   - `HumanDesignAnalysis`: energy type, strategy, authority
   - `ZiWeiAnalysis`: Traditional Chinese astrology
-  - `FaceReadingAnalysis`: AI-powered facial feature interpretation (optional)
+  - `FaceReadingAnalysis`: AI-powered facial feature interpretation (optional) with fun elements:
+    - `attractivenessScore`: Score from 75-98 (always high for entertainment)
+    - `faceType`: Face style description (e.g., "精緻小臉派", "高級臉天花板")
+    - `todayFortune`: Personalized daily fortune tip
+    - `luckyItem`: Lucky item of the day
+    - `specialTraits`: Hidden special traits
   - `IChing`: I-Ching hexagram interpretation
 
 **Storage**: In-memory storage implementation (`server/storage.ts`) using Map for caching fortune results. The architecture allows easy swapping to persistent storage solutions.
+
+**History Storage** (`client/src/lib/historyStorage.ts`):
+- Stores up to 20 analysis results in localStorage
+- Photo data (base64) is stripped to save storage space
+- `hasPhoto` flag tracks if photo was uploaded for face-only re-analysis
+- Supports view, re-analyze (full), re-analyze (face only), and delete operations
 
 ### AI Integration
 
