@@ -53,6 +53,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Face reading only endpoint
+  app.post("/api/analyze-face", async (req, res) => {
+    try {
+      const { photoBase64 } = req.body;
+      
+      if (!photoBase64 || typeof photoBase64 !== "string") {
+        res.status(400).json({ 
+          success: false, 
+          error: "請提供照片進行面相分析" 
+        });
+        return;
+      }
+      
+      console.log("🔍 Starting face-only analysis...");
+      const faceReading = await analyzeFaceWithAI(photoBase64);
+      console.log("✅ Face reading completed:", faceReading);
+      
+      res.json({ success: true, faceReading });
+    } catch (error) {
+      console.error("Face analysis error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "面相分析過程發生錯誤，請稍後再試" 
+      });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

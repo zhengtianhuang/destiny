@@ -8,6 +8,7 @@ export interface HistoryItem {
   name: string;
   date: string;
   result: FortuneResult;
+  hasPhoto?: boolean;
 }
 
 export function getHistory(): HistoryItem[] {
@@ -20,15 +21,29 @@ export function getHistory(): HistoryItem[] {
   }
 }
 
-export function addToHistory(result: FortuneResult): void {
+export function addToHistory(result: FortuneResult, forceHasPhoto?: boolean): void {
   try {
     const history = getHistory();
+    
+    // Check if photo was uploaded before stripping it
+    // forceHasPhoto is used when we know a photo was used but it's already stripped from result
+    const hasPhoto = forceHasPhoto ?? !!result.input.photoBase64;
+    
+    // Create a copy of result without photoBase64 to save storage space
+    const resultWithoutPhoto: FortuneResult = {
+      ...result,
+      input: {
+        ...result.input,
+        photoBase64: undefined,
+      },
+    };
     
     const newItem: HistoryItem = {
       id: result.id,
       name: result.input.name,
       date: new Date().toISOString(),
-      result,
+      result: resultWithoutPhoto,
+      hasPhoto,
     };
     
     const existingIndex = history.findIndex((item) => item.id === result.id);

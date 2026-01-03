@@ -43,7 +43,7 @@ import {
   Zap,
   AlertCircle,
 } from "lucide-react";
-import type { FortuneInput, FortuneResult } from "@shared/schema";
+import type { FortuneInput, FortuneResult, FaceReadingAnalysis } from "@shared/schema";
 import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount, addRewardAdBonus } from "@shared/monetization";
 import { adService } from "@/lib/adService";
 import heic2any from "heic2any";
@@ -77,6 +77,9 @@ export default function Analyze() {
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [watchingAd, setWatchingAd] = useState(false);
   const [previousResult, setPreviousResult] = useState<FortuneResult | null>(null);
+  const [faceReadingOnlyMode, setFaceReadingOnlyMode] = useState(false);
+  const [isAnalyzingFace, setIsAnalyzingFace] = useState(false);
+  const [needsPhotoForFaceAnalysis, setNeedsPhotoForFaceAnalysis] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -113,6 +116,22 @@ export default function Analyze() {
         if (prefillData.previousResult) {
           setPreviousResult(prefillData.previousResult);
         }
+        
+        // Handle face-reading-only mode
+        if (prefillData.faceReadingOnly) {
+          setFaceReadingOnlyMode(true);
+          if (prefillData.needsPhotoUpload) {
+            // User needs to upload a new photo for face-only analysis
+            setNeedsPhotoForFaceAnalysis(true);
+            setStep(2); // Go to photo upload step
+          } else if (input.photoBase64) {
+            sessionStorage.removeItem("prefillData");
+            // Trigger face-only analysis
+            handleFaceOnlyAnalysis(input.photoBase64, prefillData.previousResult);
+            return;
+          }
+        }
+        
         sessionStorage.removeItem("prefillData");
         toast({
           title: "已載入資料",
@@ -123,6 +142,42 @@ export default function Analyze() {
       }
     }
   }, [form, toast]);
+
+  const handleFaceOnlyAnalysis = async (photoBase64: string, baseResult: FortuneResult) => {
+    setIsAnalyzingFace(true);
+    try {
+      const response = await apiRequest("POST", "/api/analyze-face", { photoBase64 });
+      const data = await response.json() as { success: boolean; faceReading?: FaceReadingAnalysis; error?: string };
+      
+      if (data.success && data.faceReading) {
+        const updatedResult = {
+          ...baseResult,
+          faceReading: data.faceReading,
+        };
+        sessionStorage.setItem("fortuneResult", JSON.stringify(updatedResult));
+        // Pass true for forceHasPhoto since we just analyzed a photo
+        addToHistory(updatedResult, true);
+        setLocation("/result");
+      } else {
+        toast({
+          title: "面相分析失敗",
+          description: data.error || "請稍後再試",
+          variant: "destructive",
+        });
+        setFaceReadingOnlyMode(false);
+        setIsAnalyzingFace(false);
+      }
+    } catch (error) {
+      console.error("Face analysis error:", error);
+      toast({
+        title: "連線錯誤",
+        description: "無法連線到伺服器，請檢查網路連線",
+        variant: "destructive",
+      });
+      setFaceReadingOnlyMode(false);
+      setIsAnalyzingFace(false);
+    }
+  };
 
   const analyzeMutation = useMutation({
     mutationFn: async (data: FortuneInput) => {
@@ -279,6 +334,25 @@ export default function Analyze() {
     incrementAnalysisCount();
     analyzeMutation.mutate(input);
   };
+
+  // Face-only analysis loading screen
+  if (isAnalyzingFace) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-12 md:py-20">
+          <div className="text-center space-y-6">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold">正在分析面相...</h2>
+            <p className="text-muted-foreground">請稍候，AI 正在為您解讀面相特質</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -583,10 +657,12 @@ export default function Analyze() {
                 <Card className="border-border/40">
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="font-serif text-2xl">
-                      進階資料（選填）
+                      {needsPhotoForFaceAnalysis ? "上傳照片重測面相" : "進階資料（選填）"}
                     </CardTitle>
                     <CardDescription>
-                      提供更多資訊可獲得更精確的分析結果
+                      {needsPhotoForFaceAnalysis 
+                        ? "上傳新照片進行趣味面相分析" 
+                        : "提供更多資訊可獲得更精確的分析結果"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 md:p-8">
@@ -828,16 +904,40 @@ export default function Analyze() {
                       </div>
 
                       <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-12 flex-1 gap-2 rounded-full"
-                          onClick={() => setStep(1)}
-                          data-testid="button-prev-step"
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                          上一步
-                        </Button>
+                        {!needsPhotoForFaceAnalysis && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-12 flex-1 gap-2 rounded-full"
+                            onClick={() => setStep(1)}
+                            data-testid="button-prev-step"
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                            上一步
+                          </Button>
+                        )}
+                        {needsPhotoForFaceAnalysis ? (
+                          <Button
+                            type="button"
+                            className="h-12 flex-1 gap-2 rounded-full"
+                            onClick={() => {
+                              if (photoBase64 && previousResult) {
+                                handleFaceOnlyAnalysis(photoBase64, previousResult);
+                              } else {
+                                toast({
+                                  title: "請上傳照片",
+                                  description: "需要上傳照片才能進行面相分析",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            disabled={!photoBase64}
+                            data-testid="button-face-analysis"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            開始面相分析
+                          </Button>
+                        ) : (
                         <Button
                           type="button"
                           className="h-12 flex-1 gap-2 rounded-full"
@@ -862,6 +962,7 @@ export default function Analyze() {
                             </>
                           )}
                         </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>

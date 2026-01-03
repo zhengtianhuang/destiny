@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { History, Trash2, Eye, Sparkles, Calendar, User, RefreshCw } from "lucide-react";
+import { History, Trash2, Eye, Sparkles, Calendar, User, RefreshCw, Scan } from "lucide-react";
 import { getHistory, deleteHistoryItem, clearHistory, type HistoryItem } from "@/lib/historyStorage";
 import { useLocale } from "@/i18n/LocaleContext";
 
@@ -38,6 +38,17 @@ export default function HistoryPage() {
     sessionStorage.setItem("prefillData", JSON.stringify({
       input: item.result.input,
       previousResult: item.result,
+    }));
+    setLocation("/analyze");
+  };
+
+  const handleReanalyzeFaceOnly = (item: HistoryItem) => {
+    // Store flag to indicate we want face-only analysis with new photo upload
+    sessionStorage.setItem("prefillData", JSON.stringify({
+      input: item.result.input,
+      previousResult: item.result,
+      faceReadingOnly: true,
+      needsPhotoUpload: true,
     }));
     setLocation("/analyze");
   };
@@ -72,6 +83,7 @@ export default function HistoryPage() {
       startAnalysis: "開始分析",
       view: "查看",
       reanalyze: "重新分析",
+      reanalyzeFace: "重測面相",
       delete: "刪除",
       clearAll: "清除全部",
       confirmClear: "確定清除所有記錄？",
@@ -88,6 +100,7 @@ export default function HistoryPage() {
       startAnalysis: "Start Analysis",
       view: "View",
       reanalyze: "Re-analyze",
+      reanalyzeFace: "Face Only",
       delete: "Delete",
       clearAll: "Clear All",
       confirmClear: "Clear all records?",
@@ -104,6 +117,7 @@ export default function HistoryPage() {
       startAnalysis: "分析開始",
       view: "表示",
       reanalyze: "再分析",
+      reanalyzeFace: "顔のみ",
       delete: "削除",
       clearAll: "すべて削除",
       confirmClear: "すべての記録を削除しますか？",
@@ -216,6 +230,18 @@ export default function HistoryPage() {
                           <RefreshCw className="h-4 w-4" />
                           {l.reanalyze}
                         </Button>
+                        {item.hasPhoto && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => handleReanalyzeFaceOnly(item)}
+                            data-testid={`button-reanalyze-face-${item.id}`}
+                          >
+                            <Scan className="h-4 w-4" />
+                            {l.reanalyzeFace}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
