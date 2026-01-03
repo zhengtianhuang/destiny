@@ -27,6 +27,7 @@ import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getHistory, HistoryItem } from "@/lib/historyStorage";
+import { useLocale } from "@/i18n/LocaleContext";
 import type { OracleReading, OracleResponse, OraclePersona } from "@shared/schema";
 import {
   Sparkles,
@@ -44,21 +45,21 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 const formSchema = z.object({
-  question: z.string().min(1, "請輸入您想求問的問題"),
+  question: z.string().min(1, "Please enter your question"),
   category: z.enum(["love", "career", "health", "wealth", "general"]).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const categoryOptions = [
-  { value: "general", label: "綜合運勢", icon: CircleDot },
-  { value: "love", label: "感情姻緣", icon: Heart },
-  { value: "career", label: "事業工作", icon: Briefcase },
-  { value: "wealth", label: "財運金錢", icon: Wallet },
-  { value: "health", label: "健康身體", icon: Activity },
-];
+const categoryIcons = {
+  general: CircleDot,
+  love: Heart,
+  career: Briefcase,
+  wealth: Wallet,
+  health: Activity,
+};
 
-function ShakingSticks() {
+function ShakingSticks({ text }: { text: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16">
       <div className="relative w-32 h-48">
@@ -88,30 +89,40 @@ function ShakingSticks() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24 h-16 bg-gradient-to-b from-red-700 to-red-900 rounded-t-full rounded-b-xl shadow-lg" />
       </div>
       <p className="mt-8 text-lg text-muted-foreground animate-pulse">
-        籤筒搖動中...
+        {text}
       </p>
     </div>
   );
 }
 
 function StickTypeColor(type: string): string {
-  switch (type) {
-    case "上上籤":
-      return "from-yellow-400 to-amber-500";
-    case "上籤":
-      return "from-green-400 to-emerald-500";
-    case "中籤":
-      return "from-blue-400 to-blue-500";
-    case "下籤":
-      return "from-orange-400 to-orange-500";
-    case "下下籤":
-      return "from-red-400 to-red-500";
-    default:
-      return "from-purple-400 to-purple-500";
+  // Support both Chinese and translated stick types
+  if (type.includes("上上") || type === "Excellent" || type === "大吉") {
+    return "from-yellow-400 to-amber-500";
+  } else if (type.includes("上籤") || type === "Good" || type === "吉") {
+    return "from-green-400 to-emerald-500";
+  } else if (type.includes("中") || type === "Neutral" || type === "中吉") {
+    return "from-blue-400 to-blue-500";
+  } else if (type.includes("下籤") || type === "Challenging" || type === "小吉") {
+    return "from-orange-400 to-orange-500";
+  } else if (type.includes("下下") || type === "Difficult" || type === "凶") {
+    return "from-red-400 to-red-500";
   }
+  return "from-purple-400 to-purple-500";
 }
 
-function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: () => void }) {
+interface OracleLabels {
+  poem: string;
+  yourQuestion: string;
+  interpretation: string;
+  advice: string;
+  luckyDirection: string;
+  luckyTime: string;
+  askAgain: string;
+  backHome: string;
+}
+
+function OracleResult({ reading, onReset, labels }: { reading: OracleReading; onReset: () => void; labels: OracleLabels }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -121,13 +132,13 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
       <div className="text-center mb-8">
         <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r ${StickTypeColor(reading.stickType)} text-white font-semibold text-lg shadow-lg`}>
           <Sparkles className="w-5 h-5" />
-          第 {reading.stickNumber} 籤 · {reading.stickType}
+          #{reading.stickNumber} · {reading.stickType}
         </div>
       </div>
 
       <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
         <CardHeader className="text-center pb-2">
-          <h3 className="font-serif text-2xl font-semibold text-primary">籤詩</h3>
+          <h3 className="font-serif text-2xl font-semibold text-primary">{labels.poem}</h3>
         </CardHeader>
         <CardContent className="text-center">
           <div className="py-6 px-8 bg-background/50 rounded-xl">
@@ -142,7 +153,7 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
 
       <Card>
         <CardHeader className="pb-2">
-          <h3 className="font-serif text-xl font-medium">您的問題</h3>
+          <h3 className="font-serif text-xl font-medium">{labels.yourQuestion}</h3>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground italic">「{reading.question}」</p>
@@ -151,7 +162,7 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
 
       <Card>
         <CardHeader className="pb-2">
-          <h3 className="font-serif text-xl font-medium">籤詩解讀</h3>
+          <h3 className="font-serif text-xl font-medium">{labels.interpretation}</h3>
         </CardHeader>
         <CardContent>
           <p className="text-foreground leading-relaxed">{reading.interpretation}</p>
@@ -160,7 +171,7 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
 
       <Card>
         <CardHeader className="pb-2">
-          <h3 className="font-serif text-xl font-medium">行動建議</h3>
+          <h3 className="font-serif text-xl font-medium">{labels.advice}</h3>
         </CardHeader>
         <CardContent>
           <p className="text-foreground leading-relaxed">{reading.advice}</p>
@@ -172,7 +183,7 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
           <CardContent className="p-4 flex items-center gap-3">
             <Compass className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">今日吉方</p>
+              <p className="text-sm text-muted-foreground">{labels.luckyDirection}</p>
               <p className="font-medium">{reading.luckyDirection}</p>
             </div>
           </CardContent>
@@ -181,7 +192,7 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
           <CardContent className="p-4 flex items-center gap-3">
             <Clock className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">吉時</p>
+              <p className="text-sm text-muted-foreground">{labels.luckyTime}</p>
               <p className="font-medium">{reading.luckyTime}</p>
             </div>
           </CardContent>
@@ -196,11 +207,11 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
           data-testid="button-ask-again"
         >
           <ArrowLeft className="w-4 h-4" />
-          再問一次
+          {labels.askAgain}
         </Button>
         <Link href="/" className="flex-1">
           <Button variant="default" className="w-full gap-2" data-testid="button-back-home">
-            返回首頁
+            {labels.backHome}
           </Button>
         </Link>
       </div>
@@ -211,9 +222,19 @@ function OracleResult({ reading, onReset }: { reading: OracleReading; onReset: (
 export default function Oracle() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useLocale();
   const [reading, setReading] = useState<OracleReading | null>(null);
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>("none");
+
+  const o = t.oracle;
+  const categoryOptions = [
+    { value: "general", label: o.categories.general, icon: categoryIcons.general },
+    { value: "love", label: o.categories.love, icon: categoryIcons.love },
+    { value: "career", label: o.categories.career, icon: categoryIcons.career },
+    { value: "wealth", label: o.categories.wealth, icon: categoryIcons.wealth },
+    { value: "health", label: o.categories.health, icon: categoryIcons.health },
+  ];
 
   useEffect(() => {
     const items = getHistory();
@@ -255,16 +276,16 @@ export default function Oracle() {
         setReading(data.reading);
       } else {
         toast({
-          title: "籤詩生成失敗",
-          description: data.error || "請稍後再試",
+          title: o.errors.generateFailed,
+          description: data.error || o.errors.tryAgain,
           variant: "destructive",
         });
       }
     },
     onError: () => {
       toast({
-        title: "連線錯誤",
-        description: "無法連線到伺服器，請稍後再試",
+        title: o.errors.connectionError,
+        description: o.errors.serverError,
         variant: "destructive",
       });
     },
@@ -283,6 +304,17 @@ export default function Oracle() {
     });
   };
 
+  const resultLabels: OracleLabels = {
+    poem: o.poem,
+    yourQuestion: o.yourQuestion,
+    interpretation: o.interpretation,
+    advice: o.advice,
+    luckyDirection: o.luckyDirection,
+    luckyTime: o.luckyTime,
+    askAgain: o.askAgain,
+    backHome: o.backHome,
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -299,14 +331,14 @@ export default function Oracle() {
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-4 py-2">
                   <Sparkles className="h-4 w-4 text-amber-500" />
                   <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                    提問求籤
+                    {o.title}
                   </span>
                 </div>
                 <h1 className="font-serif text-3xl md:text-4xl font-semibold tracking-tight">
-                  問天機 · 得指引
+                  {o.heading}
                 </h1>
                 <p className="mt-3 text-muted-foreground">
-                  心中有疑惑？誠心發問，讓籤詩為您指引方向
+                  {o.subtitle}
                 </p>
               </div>
 
@@ -318,7 +350,7 @@ export default function Oracle() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <ShakingSticks />
+                    <ShakingSticks text={o.shaking} />
                   </motion.div>
                 ) : reading ? (
                   <motion.div
@@ -327,7 +359,7 @@ export default function Oracle() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <OracleResult reading={reading} onReset={handleReset} />
+                    <OracleResult reading={reading} onReset={handleReset} labels={resultLabels} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -345,14 +377,14 @@ export default function Oracle() {
                               name="category"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>問題類型</FormLabel>
+                                  <FormLabel>{o.categoryLabel}</FormLabel>
                                   <Select
                                     onValueChange={field.onChange}
                                     defaultValue={field.value}
                                   >
                                     <FormControl>
                                       <SelectTrigger data-testid="select-category">
-                                        <SelectValue placeholder="選擇問題類型" />
+                                        <SelectValue placeholder={o.selectCategory} />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -378,35 +410,32 @@ export default function Oracle() {
                             {historyItems.length > 0 && (
                               <div className="space-y-2">
                                 <label className="text-sm font-medium leading-none">
-                                  帶入個人資料（選填）
+                                  {o.personaLabel}
                                 </label>
                                 <Select
                                   value={selectedPersonaId}
                                   onValueChange={setSelectedPersonaId}
                                 >
                                   <SelectTrigger data-testid="select-persona" className="w-full">
-                                    <SelectValue placeholder="選擇歷史記錄中的個人資料" />
+                                    <SelectValue placeholder={o.personaLabel} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="none">
                                       <div className="flex items-center gap-2">
                                         <CircleDot className="w-4 h-4" />
-                                        不帶入個人資料
+                                        {o.noPersona}
                                       </div>
                                     </SelectItem>
                                     {historyItems.map((item) => (
                                       <SelectItem key={item.id} value={item.id} data-testid={`select-persona-${item.id}`}>
                                         <div className="flex items-center gap-2">
                                           <User className="w-4 h-4" />
-                                          {item.name} ({item.result.input.birthYear}年{item.result.input.birthMonth}月{item.result.input.birthDay}日)
+                                          {item.name} ({item.result.input.birthYear}/{item.result.input.birthMonth}/{item.result.input.birthDay})
                                         </div>
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <p className="text-xs text-muted-foreground">
-                                  帶入個人資料可讓籤詩更貼合您的命理背景
-                                </p>
                               </div>
                             )}
 
@@ -415,10 +444,10 @@ export default function Oracle() {
                               name="question"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>您的問題</FormLabel>
+                                  <FormLabel>{o.questionLabel}</FormLabel>
                                   <FormControl>
                                     <Textarea
-                                      placeholder="例如：我該不該換工作？這段感情會有結果嗎？..."
+                                      placeholder={o.questionPlaceholder}
                                       className="min-h-[120px] resize-none text-base"
                                       data-testid="input-oracle-question"
                                       {...field}
@@ -439,12 +468,12 @@ export default function Oracle() {
                               {mutation.isPending ? (
                                 <>
                                   <Loader2 className="w-5 h-5 animate-spin" />
-                                  抽籤中...
+                                  {o.drawing}
                                 </>
                               ) : (
                                 <>
                                   <Sparkles className="w-5 h-5" />
-                                  誠心求籤
+                                  {o.drawStick}
                                 </>
                               )}
                             </Button>
@@ -457,7 +486,7 @@ export default function Oracle() {
                       <Link href="/">
                         <Button variant="ghost" className="gap-2" data-testid="button-back">
                           <ArrowLeft className="w-4 h-4" />
-                          返回首頁
+                          {o.backHome}
                         </Button>
                       </Link>
                     </div>

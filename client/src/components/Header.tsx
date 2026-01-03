@@ -19,7 +19,7 @@ export function Header() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <span className="font-serif text-xl font-semibold tracking-tight">
-              {t("home.title")}
+              {t.home.title}
             </span>
           </div>
         </Link>
@@ -28,20 +28,20 @@ export function Header() {
           {!isHome && (
             <Link href="/">
               <Button variant="ghost" size="sm" data-testid="link-back-home">
-                {t("result.backHome")}
+                {t.result.backHome}
               </Button>
             </Link>
           )}
           <Link href="/oracle">
             <Button variant="ghost" size="sm" className="gap-2" data-testid="link-oracle">
               <Scroll className="h-4 w-4" />
-              <span className="hidden sm:inline">求籤</span>
+              <span className="hidden sm:inline">{t.oracle.title}</span>
             </Button>
           </Link>
           <Link href="/history">
             <Button variant="outline" size="sm" className="gap-2" data-testid="link-history">
               <History className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("nav.history")}</span>
+              <span className="hidden sm:inline">{t.nav.history}</span>
             </Button>
           </Link>
           <LanguageSwitcher />

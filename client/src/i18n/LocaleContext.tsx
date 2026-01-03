@@ -4,7 +4,8 @@ import { translations, type Locale, type TranslationKeys } from "./translations"
 type LocaleContextType = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: TranslationKeys;
+  tr: (key: string) => string;
 };
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
@@ -42,12 +43,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(newLocale);
   };
 
-  const t = (key: string): string => {
+  const tr = (key: string): string => {
     return getNestedValue(translations[locale], key);
   };
 
+  const t = translations[locale];
+
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t }}>
+    <LocaleContext.Provider value={{ locale, setLocale, t, tr }}>
       {children}
     </LocaleContext.Provider>
   );
