@@ -20,10 +20,12 @@ Preferred communication style: Simple, everyday language.
 
 **Framework**: React 18 with TypeScript, using Vite as the build tool and development server.
 
-**Routing**: Wouter - A lightweight client-side router with three main routes:
+**Routing**: Wouter - A lightweight client-side router with five main routes:
 - `/` - Landing page introducing the platform's features
 - `/analyze` - Two-step form for collecting user birth data and optional photo
 - `/result` - Displays comprehensive fortune analysis results
+- `/history` - View and manage past analysis records
+- `/oracle` - Q&A fortune stick drawing with AI-powered interpretations
 
 **UI Component Library**: Shadcn UI (New York variant) built on top of Radix UI primitives, providing accessible, customizable components. All UI components follow a consistent design system with custom color tokens and spacing primitives defined in Tailwind configuration.
 
@@ -50,9 +52,10 @@ Preferred communication style: Simple, everyday language.
 - Development: Vite dev server with HMR (hot module replacement) middleware
 - Production: Pre-built static assets served from `dist/public`
 
-**API Structure**: RESTful API with three main endpoints:
+**API Structure**: RESTful API with four main endpoints:
 - `POST /api/analyze` - Accepts user input, performs AI analysis, returns fortune results
 - `POST /api/analyze-face` - Face-only analysis endpoint for re-analyzing just the face reading
+- `POST /api/oracle` - Q&A fortune stick reading with AI interpretation
 - `GET /api/health` - Health check endpoint
 
 **Input Validation**: Zod schemas shared between client and server (`shared/schema.ts`) ensure type safety across the stack.

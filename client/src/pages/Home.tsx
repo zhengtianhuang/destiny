@@ -13,6 +13,7 @@ import {
   Hash,
   User,
   TrendingUp,
+  Scroll,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -112,6 +113,17 @@ export default function Home() {
                 >
                   開始解析
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+              <Link href="/oracle">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="group gap-2 px-8 py-6 text-lg rounded-full"
+                  data-testid="button-start-oracle"
+                >
+                  <Scroll className="h-5 w-5" />
+                  提問求籤
                 </Button>
               </Link>
             </div>

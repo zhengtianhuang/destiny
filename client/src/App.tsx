@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import Analyze from "@/pages/Analyze";
 import Result from "@/pages/Result";
 import History from "@/pages/History";
+import Oracle from "@/pages/Oracle";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/analyze" component={Analyze} />
       <Route path="/result" component={Result} />
       <Route path="/history" component={History} />
+      <Route path="/oracle" component={Oracle} />
       <Route component={NotFound} />
     </Switch>
   );

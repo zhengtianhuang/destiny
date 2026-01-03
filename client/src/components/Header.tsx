@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { Sparkles, History } from "lucide-react";
+import { Sparkles, History, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/i18n/LocaleContext";
 
@@ -32,6 +32,12 @@ export function Header() {
               </Button>
             </Link>
           )}
+          <Link href="/oracle">
+            <Button variant="ghost" size="sm" className="gap-2" data-testid="link-oracle">
+              <Scroll className="h-4 w-4" />
+              <span className="hidden sm:inline">求籤</span>
+            </Button>
+          </Link>
           <Link href="/history">
             <Button variant="outline" size="sm" className="gap-2" data-testid="link-history">
               <History className="h-4 w-4" />

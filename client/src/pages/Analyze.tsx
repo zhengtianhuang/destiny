@@ -42,6 +42,7 @@ import {
   Loader2,
   Zap,
   AlertCircle,
+  Eye,
 } from "lucide-react";
 import type { FortuneInput, FortuneResult, FaceReadingAnalysis } from "@shared/schema";
 import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount, addRewardAdBonus } from "@shared/monetization";
@@ -342,11 +343,55 @@ export default function Analyze() {
         <Header />
         <main className="flex-1 flex items-center justify-center py-12 md:py-20">
           <div className="text-center space-y-6">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            <div className="relative mx-auto w-24 h-24">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 animate-pulse" />
+              <div className="absolute inset-2 rounded-full bg-gradient-to-r from-primary/30 to-accent/30 animate-spin" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-4 rounded-full bg-background flex items-center justify-center">
+                <Eye className="h-8 w-8 text-primary" />
+              </div>
             </div>
             <h2 className="text-2xl font-serif font-bold">正在分析面相...</h2>
             <p className="text-muted-foreground">請稍候，AI 正在為您解讀面相特質</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Main analysis loading screen
+  if (analyzeMutation.isPending) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-12 md:py-20">
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+            <div className="relative text-center space-y-8 p-8">
+              <div className="relative mx-auto w-32 h-32">
+                <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-pulse" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" style={{ animationDuration: '1s' }} />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-b-accent animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }} />
+                <div className="absolute inset-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <h2 className="text-2xl font-serif font-bold">正在解析您的命運軌跡...</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  AI 正在融合星盤、人類圖、紫微斗數、易經等多維度分析
+                </p>
+              </div>
+              <div className="flex justify-center gap-1">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-primary animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </main>
         <Footer />

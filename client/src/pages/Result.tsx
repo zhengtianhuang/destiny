@@ -37,6 +37,7 @@ import {
   Play,
   Loader2,
   Zap,
+  Scroll,
 } from "lucide-react";
 import type { FortuneResult } from "@shared/schema";
 
@@ -708,7 +709,7 @@ export default function Result() {
           </section>
 
           {/* CTA */}
-          <div className="text-center">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/analyze">
               <Button
                 size="lg"
@@ -717,6 +718,17 @@ export default function Result() {
               >
                 進行新的分析
                 <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/oracle">
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2 rounded-full px-8"
+                data-testid="button-oracle-from-result"
+              >
+                <Scroll className="h-4 w-4" />
+                提問求籤
               </Button>
             </Link>
           </div>
