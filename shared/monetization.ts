@@ -50,17 +50,28 @@ export const MONETIZATION_SETTINGS = {
 };
 
 export function getLocalAnalysisCount(): number {
-  const stored = localStorage.getItem("analysisCount");
-  const lastDate = localStorage.getItem("analysisDate");
-  const today = new Date().toDateString();
+  try {
+    const stored = localStorage.getItem("analysisCount");
+    const lastDate = localStorage.getItem("analysisDate");
+    const today = new Date().toDateString();
 
-  if (lastDate !== today) {
-    localStorage.setItem("analysisCount", "0");
-    localStorage.setItem("analysisDate", today);
+    if (lastDate !== today) {
+      localStorage.setItem("analysisCount", "0");
+      localStorage.setItem("analysisDate", today);
+      return 0;
+    }
+
+    const count = parseInt(stored || "0", 10);
+    // 如果解析失敗或數值不合理，重置為 0
+    if (isNaN(count) || count < 0 || count > 100) {
+      localStorage.setItem("analysisCount", "0");
+      return 0;
+    }
+    return count;
+  } catch {
+    // localStorage 不可用時，允許使用
     return 0;
   }
-
-  return parseInt(stored || "0", 10);
 }
 
 export function incrementAnalysisCount(): void {
