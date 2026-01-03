@@ -171,7 +171,8 @@ export const translations = {
       backHome: "返回首頁",
     },
     footer: {
-      disclaimer: "本服務僅供娛樂參考，不構成任何專業建議",
+      disclaimer: "本服務僅供娛樂參考",
+      madeWith: "以愛製作",
       copyright: "版權所有",
     },
     oracle: {
@@ -388,7 +389,8 @@ export const translations = {
       backHome: "Back to Home",
     },
     footer: {
-      disclaimer: "For entertainment purposes only, not professional advice",
+      disclaimer: "For entertainment purposes only",
+      madeWith: "Made with love",
       copyright: "All Rights Reserved",
     },
     oracle: {
@@ -605,7 +607,8 @@ export const translations = {
       backHome: "ホームに戻る",
     },
     footer: {
-      disclaimer: "エンターテインメント目的のみ、専門的なアドバイスではありません",
+      disclaimer: "エンターテインメント目的のみ",
+      madeWith: "愛を込めて製作",
       copyright: "著作権所有",
     },
     oracle: {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,20 +48,33 @@ import type { FortuneInput, FortuneResult, FaceReadingAnalysis } from "@shared/s
 import { canAnalyze, getRemainingAnalysis, incrementAnalysisCount, addRewardAdBonus } from "@shared/monetization";
 import { adService } from "@/lib/adService";
 import heic2any from "heic2any";
+import { useLocale } from "@/i18n/LocaleContext";
 
-const formSchema = z.object({
-  name: z.string().min(1, "請輸入姓名"),
-  birthYear: z.string().min(1, "請選擇出生年份"),
-  birthMonth: z.string().min(1, "請選擇出生月份"),
-  birthDay: z.string().min(1, "請選擇出生日期"),
-  gender: z.string().min(1, "請選擇性別"),
-  birthHour: z.string().optional(),
-  birthMinute: z.string().optional(),
-  birthPlace: z.string().optional(),
-  currentLocation: z.string().optional(),
-});
+function useFormSchema(t: ReturnType<typeof useLocale>["t"]) {
+  return useMemo(() => z.object({
+    name: z.string().min(1, t.analyze.nameRequired),
+    birthYear: z.string().min(1, t.analyze.birthYearRequired),
+    birthMonth: z.string().min(1, t.analyze.birthMonthRequired),
+    birthDay: z.string().min(1, t.analyze.birthDayRequired),
+    gender: z.string().min(1, t.analyze.genderRequired),
+    birthHour: z.string().optional(),
+    birthMinute: z.string().optional(),
+    birthPlace: z.string().optional(),
+    currentLocation: z.string().optional(),
+  }), [t]);
+}
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = {
+  name: string;
+  birthYear: string;
+  birthMonth: string;
+  birthDay: string;
+  gender: string;
+  birthHour?: string;
+  birthMinute?: string;
+  birthPlace?: string;
+  currentLocation?: string;
+};
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
@@ -73,6 +86,8 @@ const minutes = Array.from({ length: 60 }, (_, i) => i);
 export default function Analyze() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useLocale();
+  const formSchema = useFormSchema(t);
   const [step, setStep] = useState(1);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
@@ -285,15 +300,15 @@ export default function Analyze() {
     try {
       await adService.showRewardedAd();
       toast({
-        title: "✅ 廣告觀看完成",
-        description: "恭喜！獲得 2 次分析機會",
+        title: t.analyze.adComplete,
+        description: t.analyze.adCompleteDesc,
         duration: 3000,
       });
     } catch (error) {
-      console.error("廣告失敗:", error);
+      console.error("Ad failed:", error);
       toast({
-        title: "廣告加載失敗",
-        description: "請檢查網絡連接",
+        title: t.analyze.adFailed,
+        description: t.analyze.adFailedDesc,
         variant: "destructive",
       });
     } finally {
@@ -307,11 +322,10 @@ export default function Analyze() {
   };
 
   const onSubmitFinal = () => {
-    // 檢查廣告限制
     if (!canAnalyze()) {
       toast({
-        title: "今日分析次數已用盡",
-        description: "觀看廣告可獲得更多次數，或明天再試",
+        title: t.analyze.dailyLimitReached,
+        description: t.analyze.dailyLimitDesc,
         variant: "destructive",
       });
       return;
@@ -350,8 +364,8 @@ export default function Analyze() {
                 <Eye className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <h2 className="text-2xl font-serif font-bold">正在分析面相...</h2>
-            <p className="text-muted-foreground">請稍候，AI 正在為您解讀面相特質</p>
+            <h2 className="text-2xl font-serif font-bold">{t.analyze.analyzingFace}</h2>
+            <p className="text-muted-foreground">{t.analyze.analyzingFaceDesc}</p>
           </div>
         </main>
         <Footer />
@@ -377,9 +391,9 @@ export default function Analyze() {
                 </div>
               </div>
               <div className="space-y-3">
-                <h2 className="text-2xl font-serif font-bold">正在解析您的命運軌跡...</h2>
+                <h2 className="text-2xl font-serif font-bold">{t.analyze.analyzingDestiny}</h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  AI 正在融合星盤、人類圖、紫微斗數、易經等多維度分析
+                  {t.analyze.analyzingDestinyDesc}
                 </p>
               </div>
               <div className="flex justify-center gap-1">
@@ -413,7 +427,7 @@ export default function Analyze() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Sparkles className="h-5 w-5 text-primary" />
-                      上次分析結果
+                      {t.analyze.previousResult}
                     </CardTitle>
                     <Button
                       variant="ghost"
@@ -446,7 +460,7 @@ export default function Analyze() {
                           <User className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">性格特質</p>
+                          <p className="font-medium">{t.analyze.personalityTraits}</p>
                           <p className="text-muted-foreground">
                             {previousResult.personality.traits?.slice(0, 3).join("、")}
                           </p>
@@ -459,7 +473,7 @@ export default function Analyze() {
                           <Zap className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">幸運色 & 數字</p>
+                          <p className="font-medium">{t.analyze.luckyColorNumber}</p>
                           <p className="text-muted-foreground">
                             {previousResult.dailyFortune.luckyColors?.join("、")} | {previousResult.dailyFortune.luckyNumbers?.join(", ")}
                           </p>
@@ -477,7 +491,7 @@ export default function Analyze() {
                     }}
                     data-testid="button-view-full-previous-result"
                   >
-                    查看完整結果
+                    {t.analyze.viewFullResult}
                   </Button>
                 </CardContent>
               </Card>
@@ -515,10 +529,10 @@ export default function Analyze() {
                 <Card className="border-border/40">
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="font-serif text-2xl">
-                      基本資料
+                      {t.analyze.title}
                     </CardTitle>
                     <CardDescription>
-                      請填寫您的基本資訊以進行命理分析
+                      {t.analyze.subtitle}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 md:p-8">
@@ -534,11 +548,11 @@ export default function Analyze() {
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               <User className="h-4 w-4" />
-                              姓名
+                              {t.analyze.name}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="請輸入您的姓名"
+                                placeholder={t.analyze.namePlaceholder}
                                 className="h-12"
                                 data-testid="input-name"
                                 {...field}
@@ -555,7 +569,7 @@ export default function Analyze() {
                         name="gender"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>性別</FormLabel>
+                            <FormLabel>{t.analyze.gender}</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               value={field.value}
@@ -565,13 +579,13 @@ export default function Analyze() {
                                   className="h-12"
                                   data-testid="select-gender"
                                 >
-                                  <SelectValue placeholder="請選擇性別" />
+                                  <SelectValue placeholder={t.analyze.genderPlaceholder} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="male">男</SelectItem>
-                                <SelectItem value="female">女</SelectItem>
-                                <SelectItem value="other">其他</SelectItem>
+                                <SelectItem value="male">{t.analyze.male}</SelectItem>
+                                <SelectItem value="female">{t.analyze.female}</SelectItem>
+                                <SelectItem value="other">{t.analyze.other}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -583,7 +597,7 @@ export default function Analyze() {
                       <div className="space-y-2">
                         <FormLabel className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          出生日期
+                          {t.analyze.birthDate}
                         </FormLabel>
                         <div className="grid grid-cols-3 gap-3">
                           <FormField
@@ -600,7 +614,7 @@ export default function Analyze() {
                                       className="h-12"
                                       data-testid="select-birth-year"
                                     >
-                                      <SelectValue placeholder="年" />
+                                      <SelectValue placeholder={t.analyze.birthYear} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -609,7 +623,7 @@ export default function Analyze() {
                                         key={year}
                                         value={year.toString()}
                                       >
-                                        {year}年
+                                        {year}{t.analyze.yearSuffix}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -632,7 +646,7 @@ export default function Analyze() {
                                       className="h-12"
                                       data-testid="select-birth-month"
                                     >
-                                      <SelectValue placeholder="月" />
+                                      <SelectValue placeholder={t.analyze.birthMonth} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -641,7 +655,7 @@ export default function Analyze() {
                                         key={month}
                                         value={month.toString()}
                                       >
-                                        {month}月
+                                        {month}{t.analyze.monthSuffix}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -664,7 +678,7 @@ export default function Analyze() {
                                       className="h-12"
                                       data-testid="select-birth-day"
                                     >
-                                      <SelectValue placeholder="日" />
+                                      <SelectValue placeholder={t.analyze.birthDay} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -673,7 +687,7 @@ export default function Analyze() {
                                         key={day}
                                         value={day.toString()}
                                       >
-                                        {day}日
+                                        {day}{t.analyze.daySuffix}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -690,7 +704,7 @@ export default function Analyze() {
                         className="w-full h-12 text-base gap-2 rounded-full"
                         data-testid="button-next-step"
                       >
-                        繼續
+                        {t.analyze.continue}
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </form>
@@ -702,12 +716,12 @@ export default function Analyze() {
                 <Card className="border-border/40">
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="font-serif text-2xl">
-                      {needsPhotoForFaceAnalysis ? "上傳照片重測面相" : "進階資料（選填）"}
+                      {needsPhotoForFaceAnalysis ? t.analyze.step2FaceOnly : t.analyze.step2}
                     </CardTitle>
                     <CardDescription>
                       {needsPhotoForFaceAnalysis 
-                        ? "上傳新照片進行趣味面相分析" 
-                        : "提供更多資訊可獲得更精確的分析結果"}
+                        ? t.analyze.step2FaceOnlyDesc 
+                        : t.analyze.step2Desc}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 md:p-8">
@@ -716,7 +730,7 @@ export default function Analyze() {
                       <div className="space-y-2">
                         <FormLabel className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          出生時間
+                          {t.analyze.birthTime}
                         </FormLabel>
                         <div className="grid grid-cols-2 gap-3">
                           <FormField
@@ -733,7 +747,7 @@ export default function Analyze() {
                                       className="h-12"
                                       data-testid="select-birth-hour"
                                     >
-                                      <SelectValue placeholder="時" />
+                                      <SelectValue placeholder={t.analyze.hour} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -742,7 +756,7 @@ export default function Analyze() {
                                         key={hour}
                                         value={hour.toString()}
                                       >
-                                        {hour.toString().padStart(2, "0")}時
+                                        {hour.toString().padStart(2, "0")}{t.analyze.hourSuffix}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -764,7 +778,7 @@ export default function Analyze() {
                                       className="h-12"
                                       data-testid="select-birth-minute"
                                     >
-                                      <SelectValue placeholder="分" />
+                                      <SelectValue placeholder={t.analyze.minute} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -773,7 +787,7 @@ export default function Analyze() {
                                         key={minute}
                                         value={minute.toString()}
                                       >
-                                        {minute.toString().padStart(2, "0")}分
+                                        {minute.toString().padStart(2, "0")}{t.analyze.minuteSuffix}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -783,7 +797,7 @@ export default function Analyze() {
                           />
                         </div>
                         <FormDescription>
-                          提供出生時間可獲得更精確的星盤與紫微斗數分析
+                          {t.analyze.birthTimeHint}
                         </FormDescription>
                       </div>
 
@@ -795,11 +809,11 @@ export default function Analyze() {
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               <MapPin className="h-4 w-4" />
-                              出生地點
+                              {t.analyze.birthPlace}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="例如：台北市"
+                                placeholder={t.analyze.birthPlacePlaceholder}
                                 className="h-12"
                                 data-testid="input-birth-place"
                                 {...field}
@@ -817,11 +831,11 @@ export default function Analyze() {
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               <MapPin className="h-4 w-4" />
-                              現居地點
+                              {t.analyze.currentLocation}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="例如：新北市"
+                                placeholder={t.analyze.currentLocationPlaceholder}
                                 className="h-12"
                                 data-testid="input-current-location"
                                 {...field}
@@ -835,7 +849,7 @@ export default function Analyze() {
                       <div className="space-y-2">
                         <FormLabel className="flex items-center gap-2">
                           <Camera className="h-4 w-4" />
-                          面相照片
+                          {t.analyze.photo}
                         </FormLabel>
                         
                         {!photoPreview ? (
@@ -848,19 +862,19 @@ export default function Analyze() {
                               <>
                                 <Loader2 className="mb-3 h-10 w-10 animate-spin text-primary" />
                                 <span className="text-sm font-medium">
-                                  正在轉換照片格式...
+                                  {t.analyze.photoConverting}
                                 </span>
                               </>
                             ) : (
                               <>
                                 <Upload className="mb-3 h-10 w-10 text-muted-foreground" />
                                 <span className="text-sm font-medium">
-                                  點擊或拖曳上傳照片
+                                  {t.analyze.photoUploadText}
                                 </span>
                               </>
                             )}
                             <span className="mt-1 text-xs text-muted-foreground">
-                              支援 JPG、PNG、HEIC (iPhone)
+                              {t.analyze.photoFormats}
                             </span>
                             <input
                               id="photo-upload"
@@ -875,7 +889,7 @@ export default function Analyze() {
                           <div className="relative">
                             <img
                               src={photoPreview}
-                              alt="預覽照片"
+                              alt={t.analyze.photoPreviewAlt}
                               className="mx-auto max-h-64 rounded-lg object-cover"
                               data-testid="img-photo-preview"
                             />
@@ -892,7 +906,7 @@ export default function Analyze() {
                           </div>
                         )}
                         <FormDescription>
-                          上傳正面清晰照片可進行面相分析
+                          {t.analyze.photoHint}
                         </FormDescription>
                       </div>
 
@@ -901,7 +915,7 @@ export default function Analyze() {
                           <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-900/20">
                             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                             <AlertDescription className="text-amber-800 dark:text-amber-300">
-                              今日分析次數已用盡（限 3 次/天）。觀看廣告可獲得額外次數！
+                              {t.analyze.dailyLimitAlert}
                             </AlertDescription>
                           </Alert>
                           <Button
@@ -914,12 +928,12 @@ export default function Analyze() {
                             {watchingAd ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                廣告播放中 (10秒)...
+                                {t.analyze.watchingAd}
                               </>
                             ) : (
                               <>
                                 <Zap className="h-4 w-4" />
-                                觀看廣告獲得 2 次機會
+                                {t.analyze.watchAd}
                               </>
                             )}
                           </Button>
@@ -929,7 +943,7 @@ export default function Analyze() {
                       <div className="flex flex-col gap-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-3">
                         <div className="flex items-center gap-2">
                           <Zap className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">剩餘分析次數</span>
+                          <span className="text-sm font-medium">{t.analyze.remainingAnalysis}</span>
                         </div>
                         <div className="flex gap-1">
                           {Array.from({ length: 3 }).map((_, i) => (
@@ -958,7 +972,7 @@ export default function Analyze() {
                             data-testid="button-prev-step"
                           >
                             <ArrowLeft className="h-4 w-4" />
-                            上一步
+                            {t.analyze.previous}
                           </Button>
                         )}
                         {needsPhotoForFaceAnalysis ? (
@@ -970,8 +984,8 @@ export default function Analyze() {
                                 handleFaceOnlyAnalysis(photoBase64, previousResult);
                               } else {
                                 toast({
-                                  title: "請上傳照片",
-                                  description: "需要上傳照片才能進行面相分析",
+                                  title: t.analyze.uploadPhotoRequired,
+                                  description: t.analyze.uploadPhotoRequiredDesc,
                                   variant: "destructive",
                                 });
                               }
@@ -980,7 +994,7 @@ export default function Analyze() {
                             data-testid="button-face-analysis"
                           >
                             <Sparkles className="h-4 w-4" />
-                            開始面相分析
+                            {t.analyze.startFaceAnalysis}
                           </Button>
                         ) : (
                         <Button
@@ -993,17 +1007,17 @@ export default function Analyze() {
                           {analyzeMutation.isPending ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin" />
-                              分析中...
+                              {t.analyze.analyzing}
                             </>
                           ) : !canAnalyze() ? (
                             <>
                               <AlertCircle className="h-4 w-4" />
-                              次數已用盡
+                              {t.analyze.exhausted}
                             </>
                           ) : (
                             <>
                               <Sparkles className="h-4 w-4" />
-                              開始解析
+                              {t.analyze.startAnalysis}
                             </>
                           )}
                         </Button>
