@@ -80,6 +80,8 @@ Preferred communication style: Simple, everyday language.
     - `luckyItem`: Lucky item of the day
     - `specialTraits`: Hidden special traits
   - `IChing`: I-Ching hexagram interpretation
+- `OracleReading`: Fortune stick reading with poem, interpretation, advice, lucky direction/time
+- `OraclePersona`: Optional personal data for personalized oracle readings
 
 **Storage**: In-memory storage implementation (`server/storage.ts`) using Map for caching fortune results. The architecture allows easy swapping to persistent storage solutions.
 
