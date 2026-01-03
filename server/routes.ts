@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { fortuneInputSchema, type FortuneInput } from "@shared/schema";
-import { analyzeFortuneWithAI, analyzeFaceWithAI } from "./openai";
+import { fortuneInputSchema, oracleQuestionSchema, type FortuneInput } from "@shared/schema";
+import { analyzeFortuneWithAI, analyzeFaceWithAI, generateOracleReading } from "./openai";
 import { ZodError } from "zod";
 import { fromError } from "zod-validation-error";
 
@@ -76,6 +76,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         error: "面相分析過程發生錯誤，請稍後再試" 
+      });
+    }
+  });
+
+  // Oracle reading endpoint
+  app.post("/api/oracle", async (req, res) => {
+    try {
+      const { question, category } = oracleQuestionSchema.parse(req.body);
+      
+      console.log("🔮 Starting oracle reading for:", question);
+      const reading = await generateOracleReading(question, category);
+      console.log("✅ Oracle reading completed");
+      
+      res.json({ success: true, reading });
+    } catch (error) {
+      console.error("Oracle reading error:", error);
+      
+      if (error instanceof ZodError) {
+        const validationError = fromError(error);
+        res.status(400).json({ 
+          success: false, 
+          error: validationError.message 
+        });
+        return;
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: "籤詩生成過程發生錯誤，請稍後再試" 
       });
     }
   });

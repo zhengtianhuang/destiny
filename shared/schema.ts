@@ -125,6 +125,28 @@ export interface FortuneResult {
   generatedAt: string;
 }
 
+// 提問抽籤分析
+export const oracleQuestionSchema = z.object({
+  question: z.string().min(1, "請輸入您的問題"),
+  category: z.enum(["love", "career", "health", "wealth", "general"]).optional(),
+});
+
+export type OracleQuestion = z.infer<typeof oracleQuestionSchema>;
+
+export interface OracleReading {
+  id: string;
+  question: string;
+  category?: string;
+  stickNumber: number;
+  stickType: "上上籤" | "上籤" | "中籤" | "下籤" | "下下籤";
+  poem: string;
+  interpretation: string;
+  advice: string;
+  luckyDirection: string;
+  luckyTime: string;
+  generatedAt: string;
+}
+
 // API 請求/回應類型
 export interface AnalyzeRequest {
   input: FortuneInput;
@@ -133,5 +155,16 @@ export interface AnalyzeRequest {
 export interface AnalyzeResponse {
   success: boolean;
   result?: FortuneResult;
+  error?: string;
+}
+
+export interface OracleRequest {
+  question: string;
+  category?: string;
+}
+
+export interface OracleResponse {
+  success: boolean;
+  reading?: OracleReading;
   error?: string;
 }

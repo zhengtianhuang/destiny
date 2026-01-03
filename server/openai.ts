@@ -11,7 +11,8 @@ import type {
   AstrologyAnalysis,
   IChing,
   LifeCoach,
-  GuardianRole
+  GuardianRole,
+  OracleReading
 } from "@shared/schema";
 
 // Using gpt-4o for reliable availability
@@ -282,5 +283,76 @@ export async function analyzeFaceWithAI(base64Image: string): Promise<FaceReadin
       features: ["面相分析暫時無法使用"],
       interpretation: "抱歉，面相分析功能目前暫時無法使用，請稍後再試。"
     };
+  }
+}
+
+export async function generateOracleReading(question: string, category?: string): Promise<OracleReading> {
+  const stickNumber = Math.floor(Math.random() * 100) + 1;
+  const today = new Date().toLocaleDateString("zh-TW");
+  
+  const categoryText = category ? {
+    love: "感情姻緣",
+    career: "事業工作",
+    health: "健康身體",
+    wealth: "財運金錢",
+    general: "綜合運勢"
+  }[category] || "綜合運勢" : "綜合運勢";
+
+  const systemPrompt = `你是一位慈悲智慧的廟宇籤詩解籤大師，擁有深厚的傳統文化底蘊。
+你要根據求問者的問題，以及抽到的籤號，給出富有詩意且具有智慧的解答。
+回應必須使用繁體中文，並以 JSON 格式輸出。
+籤詩要有古典韻味，解籤要結合現代生活，給予實用的指引。
+語氣要溫和、慈悲、充滿智慧。`;
+
+  const prompt = `求問者在「${categoryText}」方面有此疑問：「${question}」
+今日日期：${today}
+抽到籤號：第 ${stickNumber} 籤
+
+請以 JSON 格式給出籤詩解答：
+{
+  "stickType": "籤等（從'上上籤'、'上籤'、'中籤'、'下籤'、'下下籤'中選一）",
+  "poem": "四句七言籤詩，每句用換行符分隔",
+  "interpretation": "150字左右的籤詩白話解釋，要針對求問者的具體問題",
+  "advice": "100字左右的具體行動建議",
+  "luckyDirection": "今日吉方（如：東南方、正北方）",
+  "luckyTime": "吉時（如：辰時(7-9點)、午時(11-13點)）"
+}`;
+
+  try {
+    console.log("Generating oracle reading for:", question);
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 1024,
+    });
+    console.log("Oracle reading completed");
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("No response from AI");
+    }
+
+    const analysis = JSON.parse(content);
+
+    return {
+      id: crypto.randomUUID(),
+      question,
+      category,
+      stickNumber,
+      stickType: analysis.stickType || "中籤",
+      poem: analysis.poem || "天意難測須靜待\n雲開霧散見光明\n莫急莫躁心安定\n自有貴人來相逢",
+      interpretation: analysis.interpretation || "此籤提示您需要耐心等待，時機未到不可強求。",
+      advice: analysis.advice || "保持平常心，順其自然。",
+      luckyDirection: analysis.luckyDirection || "東方",
+      luckyTime: analysis.luckyTime || "辰時(7-9點)",
+      generatedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Oracle reading error:", error);
+    throw error;
   }
 }
