@@ -17,6 +17,7 @@ export const translations = {
       analyze: "開始分析",
       features: "功能介紹",
       about: "關於我們",
+      history: "歷史記錄",
     },
     home: {
       title: "天命解析",
@@ -130,6 +131,7 @@ export const translations = {
       analyze: "Start Analysis",
       features: "Features",
       about: "About",
+      history: "History",
     },
     home: {
       title: "Destiny Decoder",
@@ -243,6 +245,7 @@ export const translations = {
       analyze: "分析開始",
       features: "機能紹介",
       about: "私たちについて",
+      history: "履歴",
     },
     home: {
       title: "天命解析",

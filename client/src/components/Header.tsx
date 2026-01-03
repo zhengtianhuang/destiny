@@ -33,8 +33,9 @@ export function Header() {
             </Link>
           )}
           <Link href="/history">
-            <Button variant="ghost" size="icon" data-testid="link-history">
-              <History className="h-5 w-5" />
+            <Button variant="outline" size="sm" className="gap-2" data-testid="link-history">
+              <History className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("nav.history")}</span>
             </Button>
           </Link>
           <LanguageSwitcher />

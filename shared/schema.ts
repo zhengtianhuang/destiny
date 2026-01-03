@@ -45,6 +45,11 @@ export interface DailyFortune {
 export interface FaceReadingAnalysis {
   features: string[];
   interpretation: string;
+  attractivenessScore?: number;
+  faceType?: string;
+  todayFortune?: string;
+  luckyItem?: string;
+  specialTraits?: string[];
 }
 
 export interface ZiWeiAnalysis {

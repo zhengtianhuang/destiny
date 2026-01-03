@@ -36,6 +36,7 @@ import {
   RefreshCw,
   Play,
   Loader2,
+  Zap,
 } from "lucide-react";
 import type { FortuneResult } from "@shared/schema";
 
@@ -531,27 +532,83 @@ export default function Result() {
           {/* Face Reading Section */}
           {result.faceReading && (
             <section className="mb-8">
-              <Card data-testid="card-face-reading">
-                <CardHeader>
+              <Card data-testid="card-face-reading" className="overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-pink-500/10 to-purple-500/10">
                   <CardTitle className="flex items-center justify-between font-serif">
                     <span className="flex items-center gap-2">
                       <Eye className="h-5 w-5 text-primary" />
-                      面相分析
+                      趣味形象分析
                     </span>
-                    <Badge variant="secondary">消耗 {FACE_READING_COST} 點</Badge>
+                    {result.faceReading.attractivenessScore && (
+                      <Badge variant="default" className="text-lg px-3 py-1">
+                        顏值 {result.faceReading.attractivenessScore} 分
+                      </Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
+                <CardContent className="space-y-6 pt-6">
+                  {result.faceReading.faceType && (
+                    <div className="text-center">
+                      <Badge variant="secondary" className="text-base px-4 py-2">
+                        {result.faceReading.faceType}
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {result.faceReading.features.map((feature: string, index: number) => (
                       <Badge key={index} variant="outline">
                         {feature}
                       </Badge>
                     ))}
                   </div>
-                  <p className="text-muted-foreground">
+                  
+                  <p className="text-muted-foreground text-center">
                     {result.faceReading.interpretation}
                   </p>
+
+                  {result.faceReading.specialTraits && result.faceReading.specialTraits.length > 0 && (
+                    <div className="rounded-lg bg-muted/50 p-4">
+                      <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        隱藏特質
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.faceReading.specialTraits.map((trait: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {trait}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(result.faceReading.todayFortune || result.faceReading.luckyItem) && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {result.faceReading.todayFortune && (
+                        <div className="rounded-lg border bg-card p-4">
+                          <p className="text-sm font-medium mb-1 flex items-center gap-2">
+                            <Zap className="h-4 w-4 text-amber-500" />
+                            今日運勢
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {result.faceReading.todayFortune}
+                          </p>
+                        </div>
+                      )}
+                      {result.faceReading.luckyItem && (
+                        <div className="rounded-lg border bg-card p-4">
+                          <p className="text-sm font-medium mb-1 flex items-center gap-2">
+                            <Star className="h-4 w-4 text-primary" />
+                            今日幸運物
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {result.faceReading.luckyItem}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </section>
