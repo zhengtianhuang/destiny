@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { adService } from "@/lib/adService";
+import { useLocale } from "@/i18n/LocaleContext";
 import { getCredits, spendCredits, FACE_READING_COST } from "@shared/monetization";
 import {
   Accordion,
@@ -58,18 +59,19 @@ const colorMap: Record<string, string> = {
   灰色: "bg-gray-500",
 };
 
-const genderLabel: Record<string, string> = {
-  male: "男",
-  female: "女",
-  other: "其他",
-};
-
 export default function Result() {
   const [, setLocation] = useLocation();
   const [result, setResult] = useState<FortuneResult | null>(null);
   const [watchingAd, setWatchingAd] = useState(false);
   const [credits, setCredits] = useState(getCredits());
   const { toast } = useToast();
+  const { t } = useLocale();
+
+  const genderLabel: Record<string, string> = {
+    male: t.analyze?.male || "男",
+    female: t.analyze?.female || "女",
+    other: t.analyze?.other || "其他",
+  };
 
   useEffect(() => {
     const stored = sessionStorage.getItem("fortuneResult");
@@ -91,16 +93,16 @@ export default function Result() {
       if (result.earned) {
         setCredits(getCredits());
         toast({
-          title: "✅ 廣告觀看完成",
-          description: "恭喜！獲得 2 次分析機會 + 100 點數",
+          title: `✅ ${t.analyze?.adComplete || "廣告觀看完成"}`,
+          description: t.analyze?.adCompleteDesc || "恭喜！獲得 2 次分析機會 + 100 點數",
           duration: 3000,
         });
       }
     } catch (error) {
-      console.error("廣告顯示失敗:", error);
+      console.error("Ad display failed:", error);
       toast({
-        title: "⚠️ 廣告顯示失敗",
-        description: "請稍後再試",
+        title: `⚠️ ${t.analyze?.adFailed || "廣告加載失敗"}`,
+        description: t.analyze?.adFailedDesc || "請稍後再試",
         variant: "destructive",
       });
     } finally {
@@ -112,14 +114,14 @@ export default function Result() {
     if (spendCredits(FACE_READING_COST)) {
       setCredits(getCredits());
       toast({
-        title: "✅ 面相分析已解鎖",
-        description: `消耗 ${FACE_READING_COST} 點數`,
+        title: `✅ ${t.result?.faceReading || "面相分析已解鎖"}`,
+        description: `${t.result?.spent || "消耗"} ${FACE_READING_COST} ${t.result?.points || "點數"}`,
         duration: 2000,
       });
     } else {
       toast({
-        title: "❌ 點數不足",
-        description: `需要 ${FACE_READING_COST} 點數，目前有 ${credits} 點`,
+        title: `❌ ${t.result?.insufficientPoints || "點數不足"}`,
+        description: `${t.result?.need || "需要"} ${FACE_READING_COST} ${t.result?.points || "點數"}，${t.result?.currentlyHave || "目前有"} ${credits} ${t.result?.pointsUnit || "點"}`,
         variant: "destructive",
       });
     }
@@ -130,7 +132,7 @@ export default function Result() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">載入中...</p>
+          <p className="text-muted-foreground">{t.common?.loading || "載入中..."}</p>
         </div>
       </div>
     );
@@ -176,7 +178,7 @@ export default function Result() {
               <Link href="/analyze">
                 <Button variant="outline" className="gap-2 rounded-full" data-testid="button-reanalyze">
                   <RefreshCw className="h-4 w-4" />
-                  重新分析
+                  {t.result?.analyzeAgain || "重新分析"}
                 </Button>
               </Link>
             </div>
@@ -188,7 +190,7 @@ export default function Result() {
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 font-serif text-xl">
                   <Sparkles className="h-5 w-5 text-accent-foreground" />
-                  今日運勢
+                  {t.result?.dailyFortune || "今日運勢"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -201,7 +203,7 @@ export default function Result() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Palette className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">今日幸運色</span>
+                      <span className="font-medium">{t.result?.luckyColors || "幸運顏色"}</span>
                     </div>
                     <div className="flex flex-wrap gap-3" data-testid="colors-lucky">
                       {dailyFortune.luckyColors.map((color, index) => (
@@ -219,7 +221,7 @@ export default function Result() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Hash className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">幸運號碼</span>
+                      <span className="font-medium">{t.result?.luckyNumbers || "幸運號碼"}</span>
                     </div>
                     <div className="flex flex-wrap gap-2" data-testid="numbers-lucky">
                       {dailyFortune.luckyNumbers.map((num, index) => (
@@ -248,14 +250,14 @@ export default function Result() {
 
           {/* Main Analysis Grid */}
           <section className="mb-8">
-            <h2 className="mb-6 font-serif text-2xl font-semibold">命理分析</h2>
+            <h2 className="mb-6 font-serif text-2xl font-semibold">{t.result?.title || "命理分析結果"}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Personality Card */}
               <Card className="md:col-span-2 lg:col-span-1" data-testid="card-personality">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <User className="h-5 w-5 text-primary" />
-                    個性特質
+                    {t.result?.personality || "性格分析"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -265,7 +267,7 @@ export default function Result() {
                     <div>
                       <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <Heart className="h-4 w-4 text-green-500" />
-                        優勢
+                        {t.result?.strengths || "優點"}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {personality.strengths.map((s, i) => (
@@ -278,7 +280,7 @@ export default function Result() {
                     <div>
                       <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <AlertCircle className="h-4 w-4 text-amber-500" />
-                        需注意
+                        {t.result?.weaknesses || "需注意"}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {personality.weaknesses.map((w, i) => (
@@ -297,7 +299,7 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <Briefcase className="h-5 w-5 text-primary" />
-                    職業發展
+                    {t.result?.career || "事業分析"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -307,7 +309,7 @@ export default function Result() {
                     <div>
                       <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <TrendingUp className="h-4 w-4 text-green-500" />
-                        適合領域
+                        {t.result?.suitableFields || "適合領域"}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {career.suitableFields.map((f, i) => (
@@ -320,7 +322,7 @@ export default function Result() {
                     <div>
                       <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                         <AlertCircle className="h-4 w-4 text-amber-500" />
-                        需謹慎
+                        {t.result?.avoidFields || "需謹慎"}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {career.avoidFields.map((f, i) => (
@@ -339,7 +341,7 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <Star className="h-5 w-5 text-primary" />
-                    西洋星盤
+                    {t.result?.astrology || "西洋占星"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -363,23 +365,23 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <Compass className="h-5 w-5 text-primary" />
-                    人類圖
+                    {t.result?.humanDesign || "人類圖"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">類型</span>
+                      <span className="text-muted-foreground">{t.result?.energyType || "能量類型"}</span>
                       <span className="font-medium">{humanDesign.type}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">策略</span>
+                      <span className="text-muted-foreground">{t.result?.strategy || "人生策略"}</span>
                       <span className="font-medium">{humanDesign.strategy}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">內在權威</span>
+                      <span className="text-muted-foreground">{t.result?.authority || "內在權威"}</span>
                       <span className="font-medium">{humanDesign.authority}</span>
                     </div>
                   </div>
@@ -394,18 +396,18 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <Moon className="h-5 w-5 text-primary" />
-                    紫微斗數
+                    {t.result?.ziWei || "紫微斗數"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">命宮主星</span>
+                      <span className="text-muted-foreground">{t.result?.mainStar || "命宮主星"}</span>
                       <span className="font-medium">{ziWei.mainStar}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">命宮</span>
+                      <span className="text-muted-foreground">{t.result?.palace || "命宮"}</span>
                       <span className="font-medium">{ziWei.palace}</span>
                     </div>
                   </div>
@@ -420,7 +422,7 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <BookOpen className="h-5 w-5 text-primary" />
-                    易經卦象
+                    {t.result?.iChing || "易經占卜"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -430,7 +432,7 @@ export default function Result() {
                     </div>
                     <div>
                       <p className="font-medium">{iChing.hexagramName}</p>
-                      <p className="text-sm text-muted-foreground">本卦</p>
+                      <p className="text-sm text-muted-foreground">{t.result?.hexagram || "卦象"}</p>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -438,7 +440,7 @@ export default function Result() {
                   </p>
                   <div className="rounded-lg bg-muted/50 p-3">
                     <p className="text-sm">
-                      <span className="font-medium">卦辭：</span>
+                      <span className="font-medium">{t.result?.hexagramText || "卦辭"}：</span>
                       {iChing.advice}
                     </p>
                   </div>
@@ -450,11 +452,11 @@ export default function Result() {
           {/* Credits Display */}
           <div className="mb-8 flex justify-between items-center rounded-lg bg-gradient-to-r from-amber-500/10 to-yellow-500/10 p-4 border border-amber-500/20">
             <div>
-              <p className="text-sm text-muted-foreground">當前點數</p>
-              <p className="text-2xl font-bold text-amber-600">{credits} 點</p>
+              <p className="text-sm text-muted-foreground">{t.result?.currentPoints || "當前點數"}</p>
+              <p className="text-2xl font-bold text-amber-600">{credits} {t.result?.pointsUnit || "點"}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => setCredits(getCredits())}>
-              刷新點數
+              {t.result?.refreshPoints || "刷新點數"}
             </Button>
           </div>
 
@@ -464,16 +466,16 @@ export default function Result() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-serif">
                   <Sparkles className="h-5 w-5 text-accent-foreground" />
-                  你的守護者角色
+                  {t.result?.guardianRole || "守護角色"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-lg bg-muted/50 p-4">
                   <p className="text-2xl font-bold text-primary">{guardianRole.role}</p>
-                  <p className="text-sm text-muted-foreground">元素：{guardianRole.element}</p>
+                  <p className="text-sm text-muted-foreground">{t.result?.element || "元素"}：{guardianRole.element}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">特殊能力</p>
+                  <p className="text-sm font-medium">{t.result?.specialPower || "特殊能力"}</p>
                   <p className="text-muted-foreground">{guardianRole.specialPower}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-3">
@@ -489,7 +491,7 @@ export default function Result() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-serif">
                   <Lightbulb className="h-5 w-5 text-primary" />
-                  今日人生教練建議
+                  {t.result?.lifeCoach || "人生教練"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -497,7 +499,7 @@ export default function Result() {
                   <p className="font-medium text-sm text-primary">{lifeCoach.dailyReminder}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">今日行動建議</p>
+                  <p className="text-sm font-medium mb-2">{t.result?.todayActions || "今日行動"}</p>
                   <ul className="space-y-2">
                     {lifeCoach.todayActions.map((action: string, idx: number) => (
                       <li key={idx} className="flex gap-2 text-sm text-muted-foreground">
@@ -517,12 +519,12 @@ export default function Result() {
                   {watchingAd ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      廣告播放中...
+                      {t.analyze?.watchingAd || "廣告播放中..."}
                     </>
                   ) : (
                     <>
                       <Play className="h-4 w-4" />
-                      觀看廣告獲得 2 次分析機會
+                      {t.analyze?.watchAd || "觀看廣告獲得 2 次分析機會"}
                     </>
                   )}
                 </Button>
@@ -538,11 +540,11 @@ export default function Result() {
                   <CardTitle className="flex items-center justify-between font-serif">
                     <span className="flex items-center gap-2">
                       <Eye className="h-5 w-5 text-primary" />
-                      趣味形象分析
+                      {t.result?.faceReading || "AI 面相分析"}
                     </span>
                     {result.faceReading.attractivenessScore && (
                       <Badge variant="default" className="text-lg px-3 py-1">
-                        顏值 {result.faceReading.attractivenessScore} 分
+                        {t.result?.attractiveness || "顏值"} {result.faceReading.attractivenessScore} {t.result?.score || "分"}
                       </Badge>
                     )}
                   </CardTitle>
@@ -572,7 +574,7 @@ export default function Result() {
                     <div className="rounded-lg bg-muted/50 p-4">
                       <p className="text-sm font-medium mb-2 flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-primary" />
-                        隱藏特質
+                        {t.result?.hiddenTraits || "隱藏特質"}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {result.faceReading.specialTraits.map((trait: string, index: number) => (
@@ -590,7 +592,7 @@ export default function Result() {
                         <div className="rounded-lg border bg-card p-4">
                           <p className="text-sm font-medium mb-1 flex items-center gap-2">
                             <Zap className="h-4 w-4 text-amber-500" />
-                            今日運勢
+                            {t.result?.dailyFortune || "今日運勢"}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {result.faceReading.todayFortune}
@@ -601,7 +603,7 @@ export default function Result() {
                         <div className="rounded-lg border bg-card p-4">
                           <p className="text-sm font-medium mb-1 flex items-center gap-2">
                             <Star className="h-4 w-4 text-primary" />
-                            今日幸運物
+                            {t.result?.luckyItem || "今日幸運物"}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {result.faceReading.luckyItem}
@@ -622,12 +624,12 @@ export default function Result() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-serif">
                     <Eye className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    面相分析（需解鎖）
+                    {t.result?.faceReading || "面相分析"} ({t.result?.needUnlock || "需解鎖"})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    上傳照片時可同步進行面相分析，獲得更深入的個人洞察。
+                    {t.result?.faceReadingHint || "上傳照片時可同步進行面相分析，獲得更深入的個人洞察。"}
                   </p>
                   <Button 
                     className="w-full gap-2" 
@@ -637,17 +639,17 @@ export default function Result() {
                     {credits >= FACE_READING_COST ? (
                       <>
                         <Eye className="h-4 w-4" />
-                        解鎖面相分析 ({FACE_READING_COST} 點)
+                        {t.result?.unlockFaceReading || "解鎖面相分析"} ({FACE_READING_COST} {t.result?.pointsUnit || "點"})
                       </>
                     ) : (
                       <>
                         <AlertCircle className="h-4 w-4" />
-                        點數不足 ({credits}/{FACE_READING_COST})
+                        {t.result?.insufficientPoints || "點數不足"} ({credits}/{FACE_READING_COST})
                       </>
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    💡 觀看廣告可獲得 100 點數！
+                    💡 {t.result?.watchAdHint || "觀看廣告可獲得 100 點數！"}
                   </p>
                 </CardContent>
               </Card>
@@ -656,13 +658,13 @@ export default function Result() {
 
           {/* Detailed Breakdowns Accordion */}
           <section className="mb-8">
-            <h2 className="mb-6 font-serif text-2xl font-semibold">詳細解讀</h2>
+            <h2 className="mb-6 font-serif text-2xl font-semibold">{t.result?.detailedBreakdown || "詳細解讀"}</h2>
             <Accordion type="single" collapsible className="space-y-2">
               <AccordionItem value="personality" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline" data-testid="accordion-personality">
                   <span className="flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
-                    性格特質詳解
+                    {t.result?.personalityDetails || "性格特質詳解"}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -683,7 +685,7 @@ export default function Result() {
                 <AccordionTrigger className="hover:no-underline" data-testid="accordion-career">
                   <span className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-primary" />
-                    職業規劃建議
+                    {t.result?.careerAdvice || "職業建議"}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -695,7 +697,7 @@ export default function Result() {
                 <AccordionTrigger className="hover:no-underline" data-testid="accordion-daily">
                   <span className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
-                    每日運勢解讀
+                    {t.result?.dailyFortuneDetails || "每日運勢解讀"}
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -716,7 +718,7 @@ export default function Result() {
                 className="gap-2 rounded-full px-8"
                 data-testid="button-new-analysis"
               >
-                進行新的分析
+                {t.result?.analyzeAgain || "重新分析"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -728,7 +730,7 @@ export default function Result() {
                 data-testid="button-oracle-from-result"
               >
                 <Scroll className="h-4 w-4" />
-                提問求籤
+                {t.home?.oracleButton || "提問求籤"}
               </Button>
             </Link>
           </div>

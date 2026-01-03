@@ -150,8 +150,8 @@ export default function Analyze() {
         
         sessionStorage.removeItem("prefillData");
         toast({
-          title: "已載入資料",
-          description: "已從歷史記錄載入您的資料，可查看上次分析結果",
+          title: t.analyze.dataLoaded,
+          description: t.analyze.dataLoadedDesc,
         });
       } catch (error) {
         console.error("Failed to parse prefill data:", error);
@@ -176,8 +176,8 @@ export default function Analyze() {
         setLocation("/result");
       } else {
         toast({
-          title: "面相分析失敗",
-          description: data.error || "請稍後再試",
+          title: t.analyze.faceAnalysisFailed,
+          description: data.error || t.analyze.tryAgainLater,
           variant: "destructive",
         });
         setFaceReadingOnlyMode(false);
@@ -186,8 +186,8 @@ export default function Analyze() {
     } catch (error) {
       console.error("Face analysis error:", error);
       toast({
-        title: "連線錯誤",
-        description: "無法連線到伺服器，請檢查網路連線",
+        title: t.analyze.connectionError,
+        description: t.analyze.connectionErrorDesc,
         variant: "destructive",
       });
       setFaceReadingOnlyMode(false);
@@ -213,8 +213,8 @@ export default function Analyze() {
         setLocation("/result");
       } else {
         toast({
-          title: "分析失敗",
-          description: data.error || "請稍後再試",
+          title: t.analyze.analysisFailed,
+          description: data.error || t.analyze.tryAgainLater,
           variant: "destructive",
         });
       }
@@ -222,8 +222,8 @@ export default function Analyze() {
     onError: (error) => {
       console.error("Analysis error:", error);
       toast({
-        title: "連線錯誤",
-        description: "無法連線到伺服器，請檢查網路連線",
+        title: t.analyze.connectionError,
+        description: t.analyze.connectionErrorDesc,
         variant: "destructive",
       });
     },
@@ -236,8 +236,8 @@ export default function Analyze() {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "檔案太大",
-          description: "請選擇小於 5MB 的圖片",
+          title: t.analyze.fileTooLarge,
+          description: t.analyze.fileTooLargeDesc,
           variant: "destructive",
         });
         return;
@@ -269,8 +269,8 @@ export default function Analyze() {
         } catch (error) {
           console.error("HEIC conversion error:", error);
           toast({
-            title: "照片轉換失敗",
-            description: "無法轉換 HEIC 格式，請改用 JPG 或 PNG",
+            title: t.analyze.photoConversionFailed,
+            description: t.analyze.photoConversionFailedDesc,
             variant: "destructive",
           });
           setIsConvertingPhoto(false);
