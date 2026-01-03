@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { History, Trash2, Eye, Sparkles, Calendar, User } from "lucide-react";
+import { History, Trash2, Eye, Sparkles, Calendar, User, RefreshCw } from "lucide-react";
 import { getHistory, deleteHistoryItem, clearHistory, type HistoryItem } from "@/lib/historyStorage";
 import { useLocale } from "@/i18n/LocaleContext";
 
@@ -32,6 +32,11 @@ export default function HistoryPage() {
   const handleView = (item: HistoryItem) => {
     sessionStorage.setItem("fortuneResult", JSON.stringify(item.result));
     setLocation("/result");
+  };
+
+  const handleReanalyze = (item: HistoryItem) => {
+    sessionStorage.setItem("prefillData", JSON.stringify(item.result.input));
+    setLocation("/analyze");
   };
 
   const handleDelete = (id: string) => {
@@ -63,6 +68,7 @@ export default function HistoryPage() {
       emptyDesc: "完成分析後會自動保存到這裡",
       startAnalysis: "開始分析",
       view: "查看",
+      reanalyze: "重新分析",
       delete: "刪除",
       clearAll: "清除全部",
       confirmClear: "確定清除所有記錄？",
@@ -78,6 +84,7 @@ export default function HistoryPage() {
       emptyDesc: "Your analysis results will be saved here automatically",
       startAnalysis: "Start Analysis",
       view: "View",
+      reanalyze: "Re-analyze",
       delete: "Delete",
       clearAll: "Clear All",
       confirmClear: "Clear all records?",
@@ -93,6 +100,7 @@ export default function HistoryPage() {
       emptyDesc: "分析結果は自動的にここに保存されます",
       startAnalysis: "分析開始",
       view: "表示",
+      reanalyze: "再分析",
       delete: "削除",
       clearAll: "すべて削除",
       confirmClear: "すべての記録を削除しますか？",
@@ -194,6 +202,16 @@ export default function HistoryPage() {
                         >
                           <Eye className="h-4 w-4" />
                           {l.view}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => handleReanalyze(item)}
+                          data-testid={`button-reanalyze-history-${item.id}`}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          {l.reanalyze}
                         </Button>
                         <Button
                           variant="outline"

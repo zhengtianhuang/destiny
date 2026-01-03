@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,6 +91,33 @@ export default function Analyze() {
       currentLocation: "",
     },
   });
+
+  useEffect(() => {
+    const prefillDataStr = sessionStorage.getItem("prefillData");
+    if (prefillDataStr) {
+      try {
+        const prefillData = JSON.parse(prefillDataStr);
+        form.reset({
+          name: prefillData.name || "",
+          birthYear: String(prefillData.birthYear) || "",
+          birthMonth: String(prefillData.birthMonth) || "",
+          birthDay: String(prefillData.birthDay) || "",
+          gender: prefillData.gender || "",
+          birthHour: prefillData.birthHour !== undefined ? String(prefillData.birthHour) : "",
+          birthMinute: prefillData.birthMinute !== undefined ? String(prefillData.birthMinute) : "",
+          birthPlace: prefillData.birthPlace || "",
+          currentLocation: prefillData.currentLocation || "",
+        });
+        sessionStorage.removeItem("prefillData");
+        toast({
+          title: "已載入資料",
+          description: "已從歷史記錄載入您的資料",
+        });
+      } catch (error) {
+        console.error("Failed to parse prefill data:", error);
+      }
+    }
+  }, [form, toast]);
 
   const analyzeMutation = useMutation({
     mutationFn: async (data: FortuneInput) => {
