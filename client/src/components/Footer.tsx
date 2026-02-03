@@ -21,6 +21,14 @@ export function Footer() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+            <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-about">
+              {t.footer.about}
+            </Link>
+            <span className="text-muted-foreground/40">|</span>
+            <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-blog">
+              {t.footer.blog}
+            </Link>
+            <span className="text-muted-foreground/40">|</span>
             <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-privacy">
               {t.footer.privacy}
             </Link>
