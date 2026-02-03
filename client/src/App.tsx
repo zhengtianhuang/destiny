@@ -10,6 +10,9 @@ import Analyze from "@/pages/Analyze";
 import Result from "@/pages/Result";
 import History from "@/pages/History";
 import Oracle from "@/pages/Oracle";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +23,9 @@ function Router() {
       <Route path="/result" component={Result} />
       <Route path="/history" component={History} />
       <Route path="/oracle" component={Oracle} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/contact" component={Contact} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Sparkles, Heart } from "lucide-react";
 import { useLocale } from "@/i18n/LocaleContext";
 
@@ -18,6 +19,20 @@ export function Footer() {
           <p className="max-w-md text-sm text-muted-foreground">
             {t.home.description}
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+            <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-privacy">
+              {t.footer.privacy}
+            </Link>
+            <span className="text-muted-foreground/40">|</span>
+            <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-terms">
+              {t.footer.terms}
+            </Link>
+            <span className="text-muted-foreground/40">|</span>
+            <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors" data-testid="link-footer-contact">
+              {t.footer.contact}
+            </Link>
+          </div>
 
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span>{t.footer.madeWith}</span>
