@@ -18,6 +18,98 @@ import type {
 // Using gpt-4o for reliable availability
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Locale-specific prompts and labels
+type SupportedLocale = "zh-TW" | "en" | "ja";
+
+const localeConfig: Record<SupportedLocale, {
+  languageInstruction: string;
+  dateLocale: string;
+  genderLabels: { male: string; female: string; other: string };
+  zodiacSigns: string[];
+  categoryLabels: Record<string, string>;
+  guardianRoles: string[];
+  elements: string[];
+  defaultFallbacks: {
+    moonSign: string;
+    risingSign: string;
+    needsMoreInfo: string;
+    mainStar: string;
+    palace: string;
+    hexagram: string;
+    hexagramName: string;
+    advice: string;
+    stickTypes: string[];
+  };
+}> = {
+  "zh-TW": {
+    languageInstruction: "回應必須使用繁體中文",
+    dateLocale: "zh-TW",
+    genderLabels: { male: "男", female: "女", other: "其他" },
+    zodiacSigns: ["摩羯座", "水瓶座", "雙魚座", "牡羊座", "金牛座", "雙子座", "巨蟹座", "獅子座", "處女座", "天秤座", "天蠍座", "射手座"],
+    categoryLabels: { love: "感情姻緣", career: "事業工作", health: "健康身體", wealth: "財運金錢", general: "綜合運勢" },
+    guardianRoles: ["光之騎士", "智慧引導者", "夢想創造者", "和諧使者", "勇敢先鋒"],
+    elements: ["火", "水", "木", "金", "土"],
+    defaultFallbacks: {
+      moonSign: "月亮星座待測",
+      risingSign: "上升星座待測",
+      needsMoreInfo: "需更多信息",
+      mainStar: "待測",
+      palace: "命宮",
+      hexagram: "☰",
+      hexagramName: "乾卦",
+      advice: "順勢而為",
+      stickTypes: ["上上籤", "上籤", "中籤", "下籤", "下下籤"]
+    }
+  },
+  "en": {
+    languageInstruction: "Response must be in English",
+    dateLocale: "en-US",
+    genderLabels: { male: "Male", female: "Female", other: "Other" },
+    zodiacSigns: ["Capricorn", "Aquarius", "Pisces", "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius"],
+    categoryLabels: { love: "Love & Relationships", career: "Career & Work", health: "Health & Wellness", wealth: "Wealth & Finance", general: "General Fortune" },
+    guardianRoles: ["Knight of Light", "Wisdom Guide", "Dream Creator", "Harmony Messenger", "Brave Pioneer"],
+    elements: ["Fire", "Water", "Wood", "Metal", "Earth"],
+    defaultFallbacks: {
+      moonSign: "Moon sign pending",
+      risingSign: "Rising sign pending",
+      needsMoreInfo: "Needs more information",
+      mainStar: "Pending",
+      palace: "Life Palace",
+      hexagram: "☰",
+      hexagramName: "Qian (Heaven)",
+      advice: "Go with the flow",
+      stickTypes: ["Supreme Fortune", "Great Fortune", "Moderate Fortune", "Small Fortune", "Caution Needed"]
+    }
+  },
+  "ja": {
+    languageInstruction: "回答は日本語で行ってください",
+    dateLocale: "ja-JP",
+    genderLabels: { male: "男性", female: "女性", other: "その他" },
+    zodiacSigns: ["山羊座", "水瓶座", "魚座", "牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", "天秤座", "蠍座", "射手座"],
+    categoryLabels: { love: "恋愛・結婚", career: "仕事・キャリア", health: "健康・身体", wealth: "金運・財運", general: "総合運勢" },
+    guardianRoles: ["光の騎士", "知恵の導き手", "夢の創造者", "調和の使者", "勇敢な開拓者"],
+    elements: ["火", "水", "木", "金", "土"],
+    defaultFallbacks: {
+      moonSign: "月星座測定中",
+      risingSign: "上昇星座測定中",
+      needsMoreInfo: "より多くの情報が必要",
+      mainStar: "測定中",
+      palace: "命宮",
+      hexagram: "☰",
+      hexagramName: "乾卦",
+      advice: "流れに身を任せる",
+      stickTypes: ["大大吉", "大吉", "中吉", "小吉", "凶"]
+    }
+  }
+};
+
+function getLocaleConfig(locale?: string): typeof localeConfig["zh-TW"] {
+  if (locale && locale in localeConfig) {
+    return localeConfig[locale as SupportedLocale];
+  }
+  return localeConfig["zh-TW"];
+}
+
 function getZodiacSign(month: number, day: number): string {
   const signs = [
     { name: "摩羯座", start: [12, 22], end: [1, 19] },
